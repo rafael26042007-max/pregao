@@ -77,7 +77,7 @@
       <!-- [NOVO] Seletor de moeda: converte todos os preços para a moeda escolhida -->
       <label class="currency-picker" title="Moeda em que os preços são mostrados">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.5-.9-1.5-1.4-2.6-1.4-1.6 0-2.7.8-2.7 2s1.1 1.7 2.7 2 2.8.8 2.8 2.1-1.2 2.1-2.8 2.1c-1.2 0-2.3-.6-2.8-1.5M12 6v1.8M12 16.2V18"/></svg>
-        <select id="currency-select" aria-label="Moeda"></select>
+        <select id="currency-select" aria-label="Moeda" data-title="Moeda dos preços"></select>
       </label>
 
       <!-- [NOVO] instalar como app (aparece só quando o navegador permite) -->
@@ -147,12 +147,12 @@
         </div>
         <label class="sort-picker">
           <span class="muted small">Ordenar:</span>
-          <select id="list-sort">
-            <option value="manual">Minha ordem (arraste)</option>
-            <option value="gain">Maior alta</option>
-            <option value="loss">Maior queda</option>
+          <select id="list-sort" data-title="Ordenar a lista"> <!-- [ALTERADO] data-title/data-hint: usados pela gaveta do celular -->
+            <option value="manual" data-hint="A ordem em que você arrastou os cards">Minha ordem (arraste)</option>
+            <option value="gain" data-hint="Quem mais subiu hoje primeiro">Maior alta</option>
+            <option value="loss" data-hint="Quem mais caiu hoje primeiro">Maior queda</option>
             <option value="name">Nome (A–Z)</option>
-            <option value="value">Maior posição</option>
+            <option value="value" data-hint="Quanto você tem investido em cada um">Maior posição</option>
           </select>
         </label>
       </div>
@@ -351,11 +351,11 @@
             </div>
             <div class="set-row">
               <div><b>Atualizar ações da B3 a cada</b><small>O dado grátis já vem com ~30 min de atraso: atualizar mais rápido só gasta o limite da brapi.</small></div>
-              <select id="set-b3poll" class="set-select">
-                <option value="1">1 minuto</option>
-                <option value="2">2 minutos</option>
+              <select id="set-b3poll" class="set-select" data-title="Atualizar ações da B3 a cada"> <!-- [ALTERADO] -->
+                <option value="1" data-hint="Gasta mais rápido o limite grátis da brapi">1 minuto</option>
+                <option value="2" data-hint="Recomendado">2 minutos</option>
                 <option value="5">5 minutos</option>
-                <option value="10">10 minutos</option>
+                <option value="10" data-hint="Economiza bateria e dados">10 minutos</option>
               </select>
             </div>
             <div class="set-row">
@@ -661,6 +661,7 @@
   <script src="js/lista.js"></script>
   <script src="js/noticias.js"></script>
   <script src="js/tema-pwa.js"></script>
+  <script src="js/seletor.js"></script> <!-- [NOVO] gaveta de opções no celular -->
   <script src="js/novidades.js"></script> <!-- [NOVO] precisa vir antes de configuracoes.js (define APP_VERSION) -->
   <script src="js/configuracoes.js"></script>
   <script src="js/boas-vindas.js"></script>

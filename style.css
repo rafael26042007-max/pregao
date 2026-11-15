@@ -898,3 +898,45 @@ body.has-demo-banner .toast { bottom: 104px; } /* [NOVO] avisos não ficam em ci
 
 /* [NOVO] Celular: preço do painel um pouco menor, para caber ao lado da variação quando der */
 @media (max-width: 640px) { .d-price { font-size: 30px; } }
+
+/* =========================================================
+   [NOVO] 11.2 Gaveta de opções no celular (js/seletor.js)
+   ========================================================= */
+/* No celular o toque "atravessa" o <select>: quem abre a gaveta é o seletor.js */
+body.touch-selects select { pointer-events: none; }
+body.sheet-open { overflow: hidden; }
+
+.sheet-overlay {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(0, 0, 0, .55);
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; transition: opacity .2s ease;
+}
+.sheet-overlay.show { opacity: 1; }
+.sheet {
+  width: 100%; max-width: 520px; max-height: 72vh;
+  display: flex; flex-direction: column;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-bottom: 0;
+  border-radius: 20px 20px 0 0; box-shadow: var(--shadow);
+  padding: 8px 0 calc(10px + env(safe-area-inset-bottom));
+  transform: translateY(100%); transition: transform .22s cubic-bezier(.2, .8, .2, 1);
+}
+.sheet-overlay.show .sheet { transform: none; }
+.sheet-handle { width: 40px; height: 4px; border-radius: 4px; background: var(--border-strong); margin: 4px auto 10px; }
+.sheet-title { margin: 0; padding: 4px 22px 12px; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+.sheet-list { list-style: none; margin: 0; padding: 6px 10px; overflow-y: auto; overscroll-behavior: contain; }
+.sheet-opt {
+  width: 100%; min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 12px; border: 0; border-radius: 12px; background: none; color: var(--text);
+  font: inherit; font-size: 16px; text-align: left; cursor: pointer;
+}
+.sheet-opt:active { background: var(--hover); }
+.sheet-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.sheet-opt[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.sheet-opt:disabled { opacity: .45; }
+.sheet-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sheet-hint { font-size: 13px; font-weight: 400; color: var(--muted); }
+.sheet-check { visibility: hidden; font-size: 18px; }
+.sheet-opt[aria-selected="true"] .sheet-check { visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .sheet-overlay, .sheet { transition: none; } }

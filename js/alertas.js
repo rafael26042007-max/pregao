@@ -176,7 +176,7 @@ function renderAlertsSection(symbol) {
       </li>`).join("")}</ul>` : ""}
     <form class="d-form" id="alert-form">
       <label>Quando
-        <select id="alert-type">
+        <select id="alert-type" data-title="Avisar quando">
           ${Object.entries(ALERT_TYPES).map(([k, t]) => `<option value="${k}">${t.label}</option>`).join("")}
         </select>
       </label>

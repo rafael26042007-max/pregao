@@ -247,6 +247,7 @@ js/vendor/qrcode.js   → biblioteca de QR code (qrcode-generator, MIT)
 js/configuracoes.js   → janela de configurações com abas
 js/boas-vindas.js     → guia de primeiros passos e modo demonstração
 js/novidades.js       → histórico de versões (CHANGELOG) e janela "O que há de novo"
+js/seletor.js         → no celular, abre as opções dos <select> numa gaveta com as cores do tema
 sw.js                 → service worker (app instalável / abre sem internet)
 sitemap.xml           → mapa do site para o Google
 manifest.json         → nome, cores e ícones do app
@@ -308,6 +309,7 @@ Pra criar um recurso novo, basta um arquivo em `js/` que use esses ganchos, mais
 
 | Versão | O que entrou |
 |---|---|
+| **2.4** | Celular: listas de opções numa gaveta com as cores do Pregão · nome de cada moeda · botão voltar fecha a gaveta |
 | **2.3** | Celular: variação no painel não sai mais da tela · "Último" mostra o dia quando o preço não é de hoje |
 | **2.2** | Janela "O que há de novo" e aviso de versão nova · limite de pedidos da Finnhub (estável com listas grandes) · links das APIs mais seguros · testes automáticos + publicar só se passarem |
 | **2.1** | Projeto renomeado para **pregao** (novo endereço), botão Baixar app (passo a passo por aparelho e QR code), aba de créditos, guia de primeiros passos, modo demonstração, links "ver minha chave", atalho de importar backup, modo aplicativo, topo ajustado no celular, correções do manifest e do backup |

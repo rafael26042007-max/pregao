@@ -213,3 +213,40 @@ test("celular (360 px): variação no painel não sai da tela", async ({ browser
   const box = await ch.boundingBox();
   expect(box.x + box.width, "o selo de variação passou da borda direita").toBeLessThanOrEqual(360);
 });
+
+// [NOVO] Gaveta de opções (js/seletor.js)
+test("celular: opções abrem na gaveta do tema e o voltar fecha", async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 360, height: 780 }, hasTouch: true, isMobile: true });
+  const page = await ctx.newPage();
+  await setup(page, { list: ["MSFT", "AAPL"] });
+  await page.goto("/index.html");
+  // toque de dedo nas coordenadas (o <select> fica com pointer-events: none de propósito)
+  const tapSort = async () => {
+    await page.locator("#list-sort").scrollIntoViewIfNeeded();
+    const b = await page.locator("#list-sort").boundingBox();
+    await page.touchscreen.tap(b.x + b.width / 2, b.y + b.height / 2);
+  };
+  await tapSort();
+  const sheet = page.locator(".sheet-overlay.show .sheet");
+  await expect(sheet).toBeVisible();
+  await expect(sheet.locator(".sheet-title")).toHaveText("Ordenar a lista");
+  await sheet.locator(".sheet-opt", { hasText: "Maior queda" }).tap();
+  await expect(page.locator(".sheet-overlay")).toHaveCount(0);
+  await expect(page.locator("#list-sort")).toHaveValue("loss");      // o <select> de verdade mudou
+  // voltar do Android fecha a gaveta sem sair da página
+  await tapSort();
+  await expect(sheet).toBeVisible();
+  await page.goBack();
+  await expect(page.locator(".sheet-overlay")).toHaveCount(0);
+  await expect(page).toHaveURL(/index\.html/);
+  await ctx.close();
+});
+
+test("PC com mouse: continua o seletor normal, sem gaveta", async ({ page }) => {
+  await setup(page);
+  await page.goto("/index.html");
+  await page.selectOption("#list-sort", "name");
+  await expect(page.locator("#list-sort")).toHaveValue("name");
+  await expect(page.locator(".sheet-overlay")).toHaveCount(0);
+  expect(await page.evaluate(() => document.body.classList.contains("touch-selects"))).toBe(false);
+});

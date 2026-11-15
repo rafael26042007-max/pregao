@@ -22,6 +22,15 @@
 /* ---------- 1. Histórico (o primeiro é a versão atual) ---------- */
 const CHANGELOG = [
   {
+    version: "2.4",
+    date: "2026-11-15",
+    items: [
+      ["🎨", "No celular, as listas de opções (moeda, ordem da lista, tempo de atualização, tipo de alerta) agora abrem numa gaveta com as cores do Pregão."],
+      ["💱", "A escolha de moeda mostra o nome de cada uma: Real brasileiro, Dólar americano, Euro…"],
+      ["↩️", "O botão voltar do celular fecha a gaveta de opções sem sair da tela."],
+    ],
+  },
+  {
     version: "2.3",
     date: "2026-11-15",
     items: [

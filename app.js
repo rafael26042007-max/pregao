@@ -32,16 +32,17 @@ const FX_REFRESH_MS = 60 * 60 * 1000; // câmbio de referência muda pouco: 1x p
 
 // [NOVO] Moedas que aparecem no seletor ("orig" = moeda original do ativo)
 const CURRENCIES = [
-  { code: "orig", label: "Moeda original" },
-  { code: "BRL", label: "R$ · BRL" },
-  { code: "USD", label: "US$ · USD" },
-  { code: "EUR", label: "€ · EUR" },
-  { code: "GBP", label: "£ · GBP" },
-  { code: "JPY", label: "¥ · JPY" },
-  { code: "CAD", label: "C$ · CAD" },
-  { code: "CHF", label: "Fr · CHF" },
-  { code: "CNY", label: "¥ · CNY" },
-  { code: "ARS", label: "$ · ARS" },
+  // [ALTERADO] + name: aparece embaixo, em letra menor, na gaveta do celular (js/seletor.js)
+  { code: "orig", label: "Moeda original", name: "Cada ativo na moeda da bolsa dele" },
+  { code: "BRL", label: "R$ · BRL", name: "Real brasileiro" },
+  { code: "USD", label: "US$ · USD", name: "Dólar americano" },
+  { code: "EUR", label: "€ · EUR", name: "Euro" },
+  { code: "GBP", label: "£ · GBP", name: "Libra esterlina" },
+  { code: "JPY", label: "¥ · JPY", name: "Iene japonês" },
+  { code: "CAD", label: "C$ · CAD", name: "Dólar canadense" },
+  { code: "CHF", label: "Fr · CHF", name: "Franco suíço" },
+  { code: "CNY", label: "¥ · CNY", name: "Yuan chinês" },
+  { code: "ARS", label: "$ · ARS", name: "Peso argentino" },
 ];
 const STORAGE_CCY = "pregao.currency";
 
@@ -1610,7 +1611,7 @@ function redrawAll() {
 
 function bindCurrency() {
   const sel = $("#currency-select");
-  sel.innerHTML = CURRENCIES.map((c) => `<option value="${c.code}">${esc(c.label)}</option>`).join("");
+  sel.innerHTML = CURRENCIES.map((c) => `<option value="${c.code}" data-hint="${esc(c.name)}">${esc(c.label)}</option>`).join(""); // [ALTERADO] + data-hint
   sel.value = CURRENCIES.some((c) => c.code === state.currency) ? state.currency : "orig";
   sel.addEventListener("change", () => {
     state.currency = sel.value;
