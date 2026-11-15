@@ -201,3 +201,15 @@ test("celular (360 px): nada sobra para os lados", async ({ browser }) => {
   expect(overflow).toBeLessThanOrEqual(0);
   await expect(page.locator("#btn-settings")).toBeInViewport();
 });
+
+// [NOVO] O painel aberto também tem que caber: o selo de variação não pode passar da borda
+test("celular (360 px): variação no painel não sai da tela", async ({ browser }) => {
+  const page = await browser.newPage({ viewport: { width: 360, height: 780 } });
+  await setup(page, { list: ["MSFT"], storage: { "pregao.currency": "BRL" } }); // em R$ o texto fica mais comprido
+  await page.goto("/index.html");
+  await page.locator(".card", { hasText: "MSFT" }).first().click();
+  const ch = page.locator("#d-change");
+  await expect(ch).toContainText("%");
+  const box = await ch.boundingBox();
+  expect(box.x + box.width, "o selo de variação passou da borda direita").toBeLessThanOrEqual(360);
+});

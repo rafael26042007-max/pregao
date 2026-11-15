@@ -22,6 +22,14 @@
 /* ---------- 1. Histórico (o primeiro é a versão atual) ---------- */
 const CHANGELOG = [
   {
+    version: "2.3",
+    date: "2026-11-15",
+    items: [
+      ["📱", "No celular, a variação do dia no painel da ação não fica mais cortada na borda da tela."],
+      ["🕒", "Quando o último preço não é de hoje (fim de semana, feriado), agora aparece o dia junto com a hora."],
+    ],
+  },
+  {
     version: "2.2",
     date: "2026-11-13",
     items: [

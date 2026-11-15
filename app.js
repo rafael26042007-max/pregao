@@ -197,7 +197,12 @@ function fmtBig(v, symbol) {
 }
 function fmtTime(ms) {
   if (!ms) return "—";
-  return new Date(ms).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const d = new Date(ms);
+  const hora = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  // [NOVO] Se não foi hoje, mostra o dia junto (ex.: "sex. 13/11, 18:00:00"), senão "Último: 18:00" no domingo engana
+  if (d.toDateString() === new Date().toDateString()) return hora;
+  const dia = d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
+  return `${dia}, ${hora}`;
 }
 function fmtChange(d, pct) {
   if (d == null || isNaN(d)) return { text: "—", cls: "flat" };

@@ -308,6 +308,7 @@ Pra criar um recurso novo, basta um arquivo em `js/` que use esses ganchos, mais
 
 | Versão | O que entrou |
 |---|---|
+| **2.3** | Celular: variação no painel não sai mais da tela · "Último" mostra o dia quando o preço não é de hoje |
 | **2.2** | Janela "O que há de novo" e aviso de versão nova · limite de pedidos da Finnhub (estável com listas grandes) · links das APIs mais seguros · testes automáticos + publicar só se passarem |
 | **2.1** | Projeto renomeado para **pregao** (novo endereço), botão Baixar app (passo a passo por aparelho e QR code), aba de créditos, guia de primeiros passos, modo demonstração, links "ver minha chave", atalho de importar backup, modo aplicativo, topo ajustado no celular, correções do manifest e do backup |
 | **2.0** | Alertas, carteira, filtro/ordem/arrastar, indicadores e notícias, tema claro, app instalável, Configurações com abas |

@@ -371,7 +371,8 @@ input { font: inherit; }
 
 .d-head { display: flex; align-items: center; gap: 14px; padding-right: 40px; }
 .d-symbol { font-family: var(--mono); font-size: 20px; font-weight: 500; }
-.d-price-row { display: flex; align-items: baseline; gap: 12px; margin-top: 22px; }
+.d-price-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; margin-top: 22px; } /* [CORRIGIDO] wrap: a variação desce para a linha de baixo quando não cabe */
+.d-price-row .change { max-width: 100%; }
 .d-price { font-size: 36px; font-weight: 500; letter-spacing: -.5px; border-radius: 8px; padding: 0 4px; margin-left: -4px; transition: background-color .6s; }
 
 /* [NOVO] botões de período do gráfico */
@@ -894,3 +895,6 @@ body.has-demo-banner .toast { bottom: 104px; } /* [NOVO] avisos não ficam em ci
   box-shadow: var(--shadow); font-size: 13.5px; color: var(--text-2);
 }
 @media (max-width: 640px) { .update-banner { flex-direction: column; align-items: stretch; top: 68px; } }
+
+/* [NOVO] Celular: preço do painel um pouco menor, para caber ao lado da variação quando der */
+@media (max-width: 640px) { .d-price { font-size: 30px; } }
