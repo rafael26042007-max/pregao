@@ -114,21 +114,80 @@ function closeShareQr() {
 /* ---------- 3. Receber (aparelho novo) ---------- */
 let pendingTransfer = null;
 
+// [ALTERADO] Compara com o que JÁ está neste aparelho: diz o que muda, e não só o que chega.
+// JSON com as chaves em ordem fixa, para {a,b} e {b,a} contarem como iguais
+const stable = (v) => JSON.stringify(v, (k, x) => (x && typeof x === "object" && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a.localeCompare(b))) : x));
+
+// Só o que é dado da pessoa. Tema, filtro e outras preferências de tela ficam de fora:
+// o aparelho ainda está iniciando quando compara, e elas podem nem ter sido salvas ainda.
+function essentials(d) {
+  return {
+    lista: Array.isArray(d["pregao.watchlist"]) ? d["pregao.watchlist"].map((i) => i.symbol) : [],
+    carteira: d["pregao.portfolio"] || {},
+    alertas: d["pregao.alerts"] || [],
+    moeda: d["pregao.currency"] ?? null,
+    chave: d["pregao.config"]?.finnhubKey || "",
+  };
+}
+
+function sameAsHere(incoming) {
+  const a = essentials(incoming), b = essentials(collectBackupData(true, TRANSFER_SKIP));
+  if (!("pregao.config" in incoming)) { delete a.chave; delete b.chave; }  // QR sem chaves: não compara chaves
+  if (a.moeda === null) { delete a.moeda; delete b.moeda; }
+  return stable(a) === stable(b);
+}
+
 function summarize(d) {
-  const n = (k) => (Array.isArray(d[k]) ? d[k].length : d[k] && typeof d[k] === "object" ? Object.keys(d[k]).length : 0);
+  const here = collectBackupData(true, TRANSFER_SKIP);
+  const syms = (list) => (Array.isArray(list) ? list.map((i) => i.symbol) : []);
+  const count = (v) => (Array.isArray(v) ? v.length : v && typeof v === "object" ? Object.keys(v).length : 0);
   const items = [];
-  items.push(`📋 ${n("pregao.watchlist")} ${n("pregao.watchlist") === 1 ? "ativo" : "ativos"} na lista`);
-  if (n("pregao.portfolio")) items.push(`💼 ${n("pregao.portfolio")} na carteira`);
-  if (n("pregao.alerts")) items.push(`🔔 ${n("pregao.alerts")} ${n("pregao.alerts") === 1 ? "alerta" : "alertas"}`);
-  items.push(d["pregao.config"]?.finnhubKey ? "🔑 Suas chaves de API (pula a configuração)" : "🔑 Sem chaves (você configura depois)");
+
+  // Lista: quem entra, quem sai
+  const novo = syms(d["pregao.watchlist"]), atual = syms(here["pregao.watchlist"]);
+  const entra = novo.filter((s) => !atual.includes(s)), sai = atual.filter((s) => !novo.includes(s));
+  const nome = (s) => s.replace(/^BINANCE:/, "").replace(/\.SA$/, "");
+  let lista = `📋 Lista: ${novo.length} ${novo.length === 1 ? "ativo" : "ativos"}`;
+  if (!atual.length) lista += "";
+  else if (!entra.length && !sai.length) lista += " (igual à deste aparelho)";
+  else {
+    const partes = [];
+    if (entra.length) partes.push(`entram ${entra.slice(0, 4).map(nome).join(", ")}${entra.length > 4 ? "…" : ""}`);
+    if (sai.length) partes.push(`saem ${sai.slice(0, 4).map(nome).join(", ")}${sai.length > 4 ? "…" : ""}`);
+    lista += ` (${partes.join("; ")})`;
+  }
+  items.push(lista);
+
+  const muda = (k, label) => {
+    const n = count(d[k]), m = count(here[k]);
+    if (!n && !m) return;
+    const igual = stable(d[k] ?? null) === stable(here[k] ?? null);
+    items.push(`${label}: ${n}${igual ? " (igual)" : m ? ` (aqui tem ${m})` : ""}`);
+  };
+  muda("pregao.portfolio", "💼 Carteira");
+  muda("pregao.alerts", "🔔 Alertas");
+
+  const k = d["pregao.config"]?.finnhubKey;
+  if (!("pregao.config" in d)) items.push("🔑 Sem chaves: as deste aparelho continuam");
+  else if (k && k === here["pregao.config"]?.finnhubKey) items.push("🔑 Chaves: as mesmas deste aparelho");
+  else if (k) items.push(here["pregao.config"]?.finnhubKey ? "🔑 Chaves: troca pelas do outro aparelho" : "🔑 Suas chaves de API (pula a configuração)");
   return items;
 }
 
 async function receiveTransfer(code) {
   try {
     const data = await decodeTransfer(code);
+    // [NOVO] já está tudo igual neste aparelho: não pergunta nada
+    if (sameAsHere(data)) {
+      window.__pregaoIncomingTransfer = false;
+      toast("Este aparelho já está com esses mesmos dados ✓");
+      return;
+    }
     pendingTransfer = data;
     $("#tr-list").innerHTML = summarize(data).map((t) => `<li>${esc(t)}</li>`).join("");
+    const temDados = (collectBackupData(true, TRANSFER_SKIP)["pregao.watchlist"] || []).length > 0;
+    $("#tr-title").textContent = temDados ? "Atualizar com os dados do outro aparelho?" : "Trazer para este aparelho?";
+    $("#tr-ok").textContent = temDados ? "Atualizar" : "Trazer dados";
     $("#transfer-overlay").hidden = false;
   } catch (err) {
     if (window.__pregaoIncomingTransfer) { window.__pregaoIncomingTransfer = false; if (!state.config.finnhubKey) emit("needKey"); }

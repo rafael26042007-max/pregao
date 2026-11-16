@@ -517,10 +517,11 @@ test("QR: o leitor (jsQR) lê a imagem gerada, mesmo com lista grande", async ({
     return jsQR(ctx.getImageData(0, 0, 600, 600).data, 600, 600)?.data;
   });
   expect(read).toBe(url);
-  // e o texto lido abre a confirmação
+  // lido no MESMO aparelho: os dados já são iguais, então só avisa
   await page.click("#qs-close");
   await page.evaluate((u) => handleScannedText(u), read);
-  await expect(page.locator("#tr-list")).toContainText("40 ativos");
+  await expect(page.locator(".toast")).toContainText("mesmos dados");
+  await expect(page.locator("#transfer-overlay")).toBeHidden();
 });
 
 test("QR: fechar o leitor sem ler nada traz o guia de volta", async ({ page }) => {
@@ -531,4 +532,32 @@ test("QR: fechar o leitor sem ler nada traz o guia de volta", async ({ page }) =
   await expect(page.locator("#welcome-overlay")).toBeHidden();
   await page.click("#scan-close");
   await expect(page.locator("#welcome-overlay")).toBeVisible();
+});
+
+test("QR: aparelho que já tem os mesmos dados só avisa", async ({ browser }) => {
+  const same = { keys: { finnhubKey: "CHAVE-A" }, list: ["MSFT", "AAPL"] };
+  const a = await (await browser.newContext()).newPage();
+  await setup(a, same);
+  await a.goto("/index.html");
+  const url = await qrUrlFrom(a);
+  const b = await (await browser.newContext()).newPage();
+  await setup(b, same);
+  await b.goto(url.replace(/^https?:\/\/[^/]+/, ""));
+  await expect(b.locator(".toast")).toContainText("mesmos dados");
+  await expect(b.locator("#transfer-overlay")).toBeHidden();
+});
+
+test("QR: aparelho com dados diferentes vê o que entra e o que sai", async ({ browser }) => {
+  const a = await (await browser.newContext()).newPage();
+  await setup(a, { keys: { finnhubKey: "CHAVE-A" }, list: ["MSFT", "AAPL"] });
+  await a.goto("/index.html");
+  const url = await qrUrlFrom(a);
+  const b = await (await browser.newContext()).newPage();
+  await setup(b, { keys: { finnhubKey: "CHAVE-A" }, list: ["MSFT", "TSLA"] });
+  await b.goto(url.replace(/^https?:\/\/[^/]+/, ""));
+  await expect(b.locator("#transfer-overlay")).toBeVisible();
+  await expect(b.locator("#tr-title")).toHaveText("Atualizar com os dados do outro aparelho?");
+  await expect(b.locator("#tr-list")).toContainText("entram AAPL");
+  await expect(b.locator("#tr-list")).toContainText("saem TSLA");
+  await expect(b.locator("#tr-list")).toContainText("as mesmas deste aparelho");
 });
