@@ -440,3 +440,95 @@ test("gráfico 1M/3M: o último ponto é o preço de agora", async ({ page }) =>
   expect(r.novoDia).toEqual([40, 41.68, 41.30]);   // entrou no fim
   expect(r.mesmoDia).toEqual([40, 41.68, 41.30]);  // trocou o ponto de hoje
 });
+
+// [NOVO] QR code entre aparelhos (js/transferir.js)
+async function qrUrlFrom(page, { keys = true } = {}) {
+  await page.click("#btn-settings");
+  await page.click('#settings-nav button[data-tab="data"]');
+  await page.click("#set-qr-show");
+  if (!keys) await page.uncheck("#qs-keys");
+  await expect(page.locator("#qs-code svg")).toBeVisible();
+  if (!keys) await page.waitForTimeout(300);
+  return page.locator("#qs-code").getAttribute("data-url");
+}
+
+test("QR: aparelho novo recebe tudo e pula o guia", async ({ browser }) => {
+  const a = await (await browser.newContext()).newPage();
+  await setup(a, { keys: { finnhubKey: "CHAVE-A" }, list: ["MSFT", "AAPL", "PETR4.SA"], storage: { "pregao.currency": "BRL" } });
+  await a.goto("/index.html");
+  const url = await qrUrlFrom(a);
+  expect(url).toContain("#transfer=1.");
+  await a.click("#qs-close");
+  await expect(a.locator("#qs-code svg")).toHaveCount(0);           // QR some da tela ao fechar
+
+  const b = await (await browser.newContext()).newPage();            // outro aparelho, sem nada
+  await setup(b, { keys: false });
+  await b.goto(url.replace(/^https?:\/\/[^/]+/, ""));
+  await expect(b.locator("#transfer-overlay")).toBeVisible();
+  await expect(b.locator("#welcome-overlay")).toBeHidden();         // sem guia por cima
+  expect(b.url()).not.toContain("transfer");                        // dados saem da barra de endereço
+  await expect(b.locator("#tr-list")).toContainText("3 ativos");
+  await expect(b.locator("#tr-list")).toContainText("chaves");
+  await b.click("#tr-ok");
+  await b.waitForLoadState("load");
+  await b.waitForTimeout(1500);
+  const got = await b.evaluate(() => ({ cfg: JSON.parse(localStorage.getItem("pregao.config")), list: JSON.parse(localStorage.getItem("pregao.watchlist")).map((i) => i.symbol), cur: JSON.parse(localStorage.getItem("pregao.currency")) }));
+  expect(got.cfg.finnhubKey).toBe("CHAVE-A");
+  expect(got.list).toEqual(["MSFT", "AAPL", "PETR4.SA"]);
+  expect(got.cur).toBe("BRL");
+  await expect(b.locator("#welcome-overlay")).toBeHidden();
+});
+
+test("QR: sem marcar as chaves, elas não vão", async ({ page }) => {
+  await setup(page, { keys: { finnhubKey: "CHAVE-SECRETA" }, list: ["MSFT"] });
+  await page.goto("/index.html");
+  const url = await qrUrlFrom(page, { keys: false });
+  const data = await page.evaluate((u) => decodeTransfer(codeFromText(u)), url);
+  expect(data["pregao.config"]).toBeUndefined();
+  expect(JSON.stringify(data)).not.toContain("CHAVE-SECRETA");
+  expect(data["pregao.watchlist"]).toHaveLength(1);
+});
+
+test("QR: código vencido avisa e volta o guia", async ({ page }) => {
+  await setup(page, { keys: false });
+  await page.goto("/index.html");
+  const code = await page.evaluate(() => "1.j." + b64url(new TextEncoder().encode(JSON.stringify({ e: Date.now() - 1000, d: { "pregao.watchlist": [] } }))));
+  await page.goto("/index.html#transfer=" + code);
+  await page.reload();
+  await expect(page.locator(".toast")).toContainText("expirou");
+  await expect(page.locator("#transfer-overlay")).toBeHidden();
+  await expect(page.locator("#welcome-overlay")).toBeVisible();
+});
+
+test("QR: o leitor (jsQR) lê a imagem gerada, mesmo com lista grande", async ({ page }) => {
+  const big = Array.from({ length: 40 }, (_, i) => `SYM${i}`);
+  const portfolio = Object.fromEntries(big.slice(0, 15).map((s) => [s, { qty: 10, avg: 12.34 }]));
+  await setup(page, { keys: { finnhubKey: "x".repeat(40), brapiKey: "y".repeat(22), twelveKey: "z".repeat(32) }, list: big, storage: { "pregao.portfolio": portfolio } });
+  await page.goto("/index.html");
+  const url = await qrUrlFrom(page);
+  const read = await page.evaluate(async () => {
+    const svg = document.querySelector("#qs-code svg").outerHTML;
+    const img = new Image();
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg.replace("<svg", '<svg width="600" height="600"'));
+    await img.decode();
+    const c = document.createElement("canvas"); c.width = 600; c.height = 600;
+    const ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, 600, 600); ctx.drawImage(img, 0, 0, 600, 600);
+    const jsQR = await loadJsQr();
+    return jsQR(ctx.getImageData(0, 0, 600, 600).data, 600, 600)?.data;
+  });
+  expect(read).toBe(url);
+  // e o texto lido abre a confirmação
+  await page.click("#qs-close");
+  await page.evaluate((u) => handleScannedText(u), read);
+  await expect(page.locator("#tr-list")).toContainText("40 ativos");
+});
+
+test("QR: fechar o leitor sem ler nada traz o guia de volta", async ({ page }) => {
+  await setup(page, { keys: false });
+  await page.goto("/index.html");
+  await page.click("#wz-qr");
+  await expect(page.locator("#qr-scan-overlay")).toBeVisible();
+  await expect(page.locator("#welcome-overlay")).toBeHidden();
+  await page.click("#scan-close");
+  await expect(page.locator("#welcome-overlay")).toBeVisible();
+});

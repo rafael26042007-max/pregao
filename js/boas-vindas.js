@@ -165,6 +165,7 @@ on("init", () => {
 });
 // Sem chave: abre o guia (ou, se já escolheu o modo demonstração, só mostra a faixa)
 on("needKey", () => {
+  if (window.__pregaoIncomingTransfer) return; // [NOVO] dados chegando por QR code (js/transferir.js): pula o guia
   // [NOVO] veio de um backup sem chaves: explica e já abre direto no passo da chave
   if (state.importedWithoutKeys) {
     openWizard(1);

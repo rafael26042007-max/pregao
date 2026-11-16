@@ -398,6 +398,14 @@
               <div><b>Importar backup</b><small>Restaura um arquivo exportado antes (substitui os dados atuais).</small></div>
               <label class="btn btn-sm file-btn">Escolher arquivo<input type="file" id="set-import" accept="application/json,.json" hidden /></label>
             </div>
+            <!-- [NOVO] QR code: passa tudo para outro aparelho (js/transferir.js) -->
+            <div class="set-row">
+              <div><b>Passar para outro aparelho</b><small>Mostre um QR code aqui e leia no outro aparelho (ou o contrário). Leva lista, carteira, alertas e chaves.</small></div>
+              <div class="row-actions">
+                <button type="button" class="btn btn-sm" id="set-qr-show">Mostrar QR code</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="set-qr-scan">Ler QR code</button>
+              </div>
+            </div>
             <div class="set-row">
               <div><b>Limpar cache</b><small id="set-cache-info">Gráficos e últimas cotações salvos. Não apaga lista, carteira nem alertas.</small></div>
               <button type="button" class="btn btn-ghost btn-sm" id="set-clear-cache">Limpar cache</button>
@@ -580,7 +588,9 @@
         <div class="wz-actions col">
           <button type="button" class="btn btn-primary" data-go="1">Configurar agora (2 min)</button>
           <button type="button" class="btn" id="wz-demo">Só quero dar uma olhada (modo demonstração)</button>
-          <button type="button" class="link-btn" id="wz-backup">Já uso o Pregão em outro aparelho — importar backup</button>
+          <!-- [NOVO] ler o QR code do outro aparelho pula a configuração -->
+          <button type="button" class="btn btn-ghost" id="wz-qr">📷 Já uso em outro aparelho: ler QR code</button>
+          <button type="button" class="link-btn" id="wz-backup">Ou importar um arquivo de backup</button>
         </div>
       </section>
 
@@ -721,6 +731,46 @@
   <script src="js/novidades.js"></script> <!-- [NOVO] precisa vir antes de configuracoes.js (define APP_VERSION) -->
   <script src="js/configuracoes.js"></script>
   <script src="js/boas-vindas.js"></script>
+  <!-- [NOVO] QR code: mostrar (aparelho configurado) -->
+  <div id="qr-share-overlay" class="overlay center qr-overlay" hidden>
+    <div class="welcome qr-modal" role="dialog" aria-labelledby="qs-title">
+      <button type="button" class="icon-btn drawer-close" id="qs-close" aria-label="Fechar">✕</button>
+      <span class="wz-kicker">Passar para outro aparelho</span>
+      <h3 id="qs-title">Leia este QR code no outro aparelho</h3>
+      <p class="muted small">No celular, dá para usar a <b>câmera normal</b>. No PC, abra o Pregão e vá em ⚙ → Dados e backup → <b>Ler QR code</b>.</p>
+      <div class="qs-code" id="qs-code"></div>
+      <div class="qs-foot"><span class="muted small" id="qs-timer"></span><button type="button" class="link-btn" id="qs-again" hidden>Gerar outro</button></div>
+      <label class="check-line"><input type="checkbox" id="qs-keys" checked /> Incluir minhas chaves de API (o outro aparelho já sai configurado)</label>
+      <p class="qs-warn small">⚠️ Quem fotografar este código leva as suas chaves. Não mostre para outras pessoas.</p>
+    </div>
+  </div>
+
+  <!-- [NOVO] QR code: ler com a câmera -->
+  <div id="qr-scan-overlay" class="overlay center qr-overlay" hidden>
+    <div class="welcome qr-modal" role="dialog" aria-labelledby="scan-title">
+      <button type="button" class="icon-btn drawer-close" id="scan-close" aria-label="Fechar">✕</button>
+      <span class="wz-kicker">Ler QR code</span>
+      <h3 id="scan-title">Aponte para o QR code do outro aparelho</h3>
+      <video id="scan-video" class="scan-video" playsinline muted></video>
+      <p class="muted small" id="scan-msg" role="status"></p>
+    </div>
+  </div>
+
+  <!-- [NOVO] QR code: confirmar o que chegou -->
+  <div id="transfer-overlay" class="overlay center qr-overlay" hidden>
+    <div class="welcome qr-modal" role="dialog" aria-labelledby="tr-title">
+      <button type="button" class="icon-btn drawer-close" id="tr-close" aria-label="Fechar">✕</button>
+      <span class="wz-kicker">Dados de outro aparelho</span>
+      <h3 id="tr-title">Trazer para este aparelho?</h3>
+      <ul class="tr-list" id="tr-list"></ul>
+      <p class="muted small">Isso <b>substitui</b> a lista, a carteira e os alertas que estão neste aparelho.</p>
+      <div class="wz-actions">
+        <button type="button" class="btn btn-ghost" id="tr-cancel">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="tr-ok">Trazer dados</button>
+      </div>
+    </div>
+  </div>
+
   <!-- [NOVO] Aviso de privacidade (1ª visita) -->
   <div class="privacy-banner" id="privacy-banner" hidden role="region" aria-label="Privacidade">
     <span>🍪 <b>Sem cookies nem rastreamento.</b> Sua lista, chaves e preferências ficam só neste aparelho.</span>
@@ -730,6 +780,7 @@
     </span>
   </div>
   <script src="js/feedback.js"></script> <!-- [NOVO] usa APP_VERSION, openSettings e showTab; envia pelo Google Forms; GitHub como alternativa -->
-  <script src="js/privacidade.js"></script> <!-- [NOVO] usa armResetButton, openSettings e showTab -->
+  <script src="js/privacidade.js"></script>
+  <script src="js/transferir.js"></script> <!-- [NOVO] QR code entre aparelhos; usa collectBackupData, applyBackupData, loadQrLib --> <!-- [NOVO] usa armResetButton, openSettings e showTab -->
 </body>
 </html>

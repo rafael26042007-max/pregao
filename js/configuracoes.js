@@ -220,15 +220,37 @@ function refreshDataTab() {
   $("#set-cache-info").textContent = `Gráficos e últimas cotações salvos (${(bytes / 1024).toFixed(1)} KB). Não apaga lista, carteira nem alertas.`;
 }
 
+// [NOVO] Junta os dados para backup ou QR code (js/transferir.js). `skip` = chaves que não vão.
+function collectBackupData(withKeys, skip = []) {
+  const data = {};
+  for (const k of pregaoKeys()) {
+    if (CACHE_KEYS.includes(k) || skip.includes(k)) continue; // cache não precisa ir no backup
+    if (k === KEYS_KEY && !withKeys) continue;
+    try { data[k] = JSON.parse(localStorage.getItem(k)); } catch { /* valor estragado: fica de fora */ }
+  }
+  return data;
+}
+
+// [NOVO] Aplica um backup (arquivo ou QR code) e recarrega a página.
+// Substitui tudo, menos as chaves deste aparelho quando o backup não traz chaves.
+function applyBackupData(data) {
+  window.__pregaoFrozen = true;            // [CORRIGIDO] trava os salvamentos da página antiga
+  const backupHasKeys = !!(data[KEYS_KEY] && data[KEYS_KEY].finnhubKey);
+  const currentKeys = localStorage.getItem(KEYS_KEY);
+  pregaoKeys().forEach((k) => localStorage.removeItem(k));
+  for (const [k, v] of Object.entries(data)) if (k.startsWith("pregao.")) localStorage.setItem(k, JSON.stringify(v));
+  if (!backupHasKeys && currentKeys) localStorage.setItem(KEYS_KEY, currentKeys);
+  // recado para mostrar depois de recarregar
+  const keysNow = backupHasKeys || (currentKeys && JSON.parse(currentKeys).finnhubKey);
+  const emptyKeys = !!data[KEYS_KEY] && !backupHasKeys;
+  try { sessionStorage.setItem("pregao.importMsg", backupHasKeys ? "with-keys" : keysNow ? "kept-keys" : emptyKeys ? "empty-keys" : "no-keys"); } catch { /* ignorado */ }
+  setTimeout(() => location.reload(), 900);
+}
+
 function bindDataTab() {
   $("#set-export").addEventListener("click", () => {
     const withKeys = $("#set-export-keys").checked;
-    const data = {};
-    for (const k of pregaoKeys()) {
-      if (CACHE_KEYS.includes(k)) continue;           // cache não precisa ir no backup
-      if (k === KEYS_KEY && !withKeys) continue;
-      data[k] = JSON.parse(localStorage.getItem(k));
-    }
+    const data = collectBackupData(withKeys);   // [ALTERADO] virou função
     const blob = new Blob([JSON.stringify({ app: "pregao", version: APP_VERSION, exportedAt: new Date().toISOString(), data }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -244,20 +266,8 @@ function bindDataTab() {
     try {
       const json = JSON.parse(await file.text());
       if (json.app !== "pregao" || !json.data) throw new Error();
-      window.__pregaoFrozen = true;            // [CORRIGIDO] trava os salvamentos da página antiga
-      // [CORRIGIDO] backup sem chaves não pode apagar as chaves que já estão neste aparelho
-      const backupHasKeys = !!(json.data[KEYS_KEY] && json.data[KEYS_KEY].finnhubKey);
-      const currentKeys = localStorage.getItem(KEYS_KEY);
-      pregaoKeys().forEach((k) => localStorage.removeItem(k)); // backup substitui tudo…
-      for (const [k, v] of Object.entries(json.data)) if (k.startsWith("pregao.")) localStorage.setItem(k, JSON.stringify(v));
-      if (!backupHasKeys && currentKeys) localStorage.setItem(KEYS_KEY, currentKeys); // …menos as chaves atuais
-      // [NOVO] recado para mostrar depois de recarregar
-      const keysNow = backupHasKeys || (currentKeys && JSON.parse(currentKeys).finnhubKey);
-      // [ALTERADO] diferencia "backup sem a parte das chaves" de "chaves que já estavam vazias"
-      const emptyKeys = !!json.data[KEYS_KEY] && !backupHasKeys;
-      try { sessionStorage.setItem("pregao.importMsg", backupHasKeys ? "with-keys" : keysNow ? "kept-keys" : emptyKeys ? "empty-keys" : "no-keys"); } catch { /* ignorado */ }
+      applyBackupData(json.data);              // [ALTERADO] virou função (também usada pelo QR code)
       toast("Backup restaurado. Recarregando…");
-      setTimeout(() => location.reload(), 900);
     } catch {
       toast("Esse arquivo não é um backup do Pregão.");
     }
