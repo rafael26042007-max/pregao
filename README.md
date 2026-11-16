@@ -260,7 +260,7 @@ js/novidades.js       → histórico de versões (CHANGELOG) e janela "O que há
 js/feedback.js        → aba Feedback: envia pro Google Forms (fila sem internet) ou abre issue no GitHub
 .github/ISSUE_TEMPLATE/feedback.md → modelo que põe a etiqueta "feedback" nas issues do app
 js/transferir.js      → QR code para passar lista, carteira, alertas e chaves para outro aparelho
-js/vendor/jsqr.js     → leitor de QR code (jsQR, Apache-2.0), carregado só quando a câmera abre
+js/vendor/jsqr.js     → leitor de QR code (jsQR 1.4.0, Apache-2.0), compactado; carregado só quando a câmera abre
 js/privacidade.js     → aviso de privacidade (a cada visita para quem não tem chave) e aba Privacidade (apagar dados do aparelho)
 js/seletor.js         → no celular, abre as opções dos <select> numa gaveta com as cores do tema
 sw.js                 → service worker (app instalável / abre sem internet)
