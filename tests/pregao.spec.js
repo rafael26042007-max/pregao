@@ -250,3 +250,47 @@ test("PC com mouse: continua o seletor normal, sem gaveta", async ({ page }) => 
   await expect(page.locator(".sheet-overlay")).toHaveCount(0);
   expect(await page.evaluate(() => document.body.classList.contains("touch-selects"))).toBe(false);
 });
+
+// [NOVO] Feedback (js/feedback.js) — envio por GitHub Issues
+async function openFeedback(page) {
+  // troca o window.open por um "espião" que só anota o link
+  await page.addInitScript(() => { window.open = (u) => { (window.__opened ||= []).push(u); return {}; }; });
+}
+
+test("feedback: abre a issue no GitHub pronta e sem levar chaves", async ({ page }) => {
+  await openFeedback(page);
+  await setup(page, { keys: { finnhubKey: "CHAVE-SECRETA-123", brapiToken: "TOKEN-SECRETO-456" } });
+  await page.goto("/index.html");
+  await page.locator("#footer-feedback").click();
+  await expect(page.locator('section[data-panel="feedback"]')).toBeVisible();
+  await expect(page.locator(".fb-note")).toContainText("pública");
+  await page.locator("#fb-type button", { hasText: "Problema" }).click();
+  await page.fill("#fb-msg", "O gráfico 1M não carrega na VALE3");
+  await page.click("#fb-send");
+  await expect(page.locator("#fb-done")).toContainText("GitHub");
+
+  const opened = await page.evaluate(() => window.__opened);
+  expect(opened).toHaveLength(1);
+  const url = new URL(opened[0]);
+  expect(url.origin + url.pathname).toBe("https://github.com/rafael26042007-max/pregao/issues/new");
+  expect(url.searchParams.get("template")).toBe("feedback.md");
+  expect(url.searchParams.get("title")).toContain("[Problema] O gráfico 1M");
+  expect(url.searchParams.get("body")).toContain("O gráfico 1M não carrega na VALE3");
+  expect(url.searchParams.get("body")).toContain("Versão");
+  expect(opened[0]).not.toContain("CHAVE-SECRETA-123"); // as chaves nunca vão junto
+  expect(opened[0]).not.toContain("TOKEN-SECRETO-456");
+  await expect(page.locator("#fb-msg")).toHaveValue("O gráfico 1M não carrega na VALE3"); // texto fica, caso desista
+});
+
+test("feedback: sem detalhes técnicos quando a pessoa desmarca", async ({ page }) => {
+  await openFeedback(page);
+  await setup(page);
+  await page.goto("/index.html");
+  await page.locator("#footer-feedback").click();
+  await page.fill("#fb-msg", "Queria alerta por notificação");
+  await page.uncheck("#fb-tech");
+  await page.click("#fb-send");
+  const body = new URL((await page.evaluate(() => window.__opened))[0]).searchParams.get("body");
+  expect(body).not.toContain("Versão");
+  expect(body).toContain("**Tipo:** Ideia");
+});

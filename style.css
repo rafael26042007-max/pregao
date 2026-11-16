@@ -940,3 +940,31 @@ body.sheet-open { overflow: hidden; }
 .sheet-check { visibility: hidden; font-size: 18px; }
 .sheet-opt[aria-selected="true"] .sheet-check { visibility: visible; }
 @media (prefers-reduced-motion: reduce) { .sheet-overlay, .sheet { transition: none; } }
+
+/* =========================================================
+   [NOVO] 11.3 Aba Feedback (js/feedback.js)
+   ========================================================= */
+.fb-intro { margin: 0 0 16px; color: var(--text-2); line-height: 1.5; }
+.fb-note { margin: 0 0 16px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-2); line-height: 1.5; } /* [NOVO] aviso de que é público */
+.fb-form { display: flex; flex-direction: column; gap: 14px; }
+.fb-type { align-self: flex-start; }
+.fb-field { display: flex; flex-direction: column; gap: 6px; }
+.fb-field textarea, .fb-field input {
+  width: 100%; padding: 11px 12px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  font: inherit; font-size: 15px; outline: none; resize: vertical;
+}
+.fb-field textarea { min-height: 120px; line-height: 1.45; }
+.fb-field textarea:focus, .fb-field input:focus { border-color: var(--accent); }
+#fb-count { align-self: flex-end; font-size: 12px; }
+.fb-check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+.fb-check input { margin-top: 3px; accent-color: var(--accent); }
+.fb-see summary { cursor: pointer; color: var(--text-2); }
+.fb-see code { display: block; margin-top: 8px; padding: 10px; border-radius: 8px; background: var(--surface-2); font-family: var(--mono); font-size: 12px; white-space: pre-wrap; word-break: break-word; }
+.fb-see p { margin: 6px 0 0; }
+#fb-send { align-self: flex-start; min-width: 140px; }
+#fb-send:disabled { opacity: .5; cursor: not-allowed; }
+.fb-done { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 12px; background: var(--accent-soft); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 640px) { #fb-send { align-self: stretch; } }
+.fb-type button { white-space: nowrap; }

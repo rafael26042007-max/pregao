@@ -170,6 +170,7 @@
     <a href="https://brapi.dev" target="_blank" rel="noopener">brapi</a> (B3, com atraso).
     Não é recomendação de investimento. ·
     <button type="button" class="link-btn" id="footer-credits" style="padding:0;font-size:inherit">Créditos</button> <!-- [NOVO] -->
+    <span>· <button type="button" class="link-btn" id="footer-feedback" style="padding:0;font-size:inherit">Enviar feedback</button></span> <!-- [NOVO] -->
   </footer>
 
   <!-- ===================== PAINEL DE DETALHES ===================== -->
@@ -240,6 +241,7 @@
           <button type="button" data-tab="alerts">Alertas</button>
           <button type="button" data-tab="data">Dados e backup</button>
           <button type="button" data-tab="about">Sobre</button>
+          <button type="button" data-tab="feedback">Feedback</button> <!-- [NOVO] js/feedback.js -->
           <button type="button" data-tab="credits">Créditos</button> <!-- [NOVO] -->
         </nav>
 
@@ -437,6 +439,29 @@
             </p>
           </section>
 
+
+          <!-- ---------- [NOVO] Aba: Feedback (js/feedback.js) ---------- -->
+          <section data-panel="feedback" hidden>
+            <p class="fb-intro">Achou um problema ou teve uma ideia? Conta aqui. <b>O Rafael lê cada mensagem</b> para decidir as próximas melhorias do Pregão.</p>
+            <!-- [NOVO] o envio é por GitHub Issues: avisar antes que é público e precisa de conta -->
+            <p class="fb-note small">🌐 Sua mensagem vira uma <b>issue pública</b> no GitHub do Pregão. Você vai precisar de uma conta no GitHub (grátis). <b>Não escreva dados pessoais</b> como e-mail, telefone ou suas chaves.</p>
+            <form id="fb-form" class="fb-form" novalidate>
+              <div class="segmented fb-type" id="fb-type" role="group" aria-label="Tipo de feedback"></div>
+              <label class="fb-field">
+                <span class="sr-only">Mensagem</span>
+                <textarea id="fb-msg" rows="5" required></textarea>
+                <small class="muted" id="fb-count">0/1500</small>
+              </label>
+              <label class="fb-check"><input type="checkbox" id="fb-tech" checked /> <span>Incluir detalhes técnicos <span class="muted">(ajuda a achar problemas)</span></span></label>
+              <details id="fb-tech-see" class="fb-see">
+                <summary class="small">Ver o que vai junto</summary>
+                <code id="fb-preview"></code>
+                <p class="muted small">Nunca vão junto: suas chaves de API, sua carteira ou sua lista de ações.</p>
+              </details>
+              <button class="btn btn-primary" id="fb-send" type="submit" disabled>Continuar no GitHub ↗</button> <!-- [ALTERADO] -->
+              <div class="fb-done" id="fb-done" hidden role="status"><b></b><span class="muted small"></span></div>
+            </form>
+          </section>
 
           <!-- ---------- [NOVO] Aba 7: Créditos ---------- -->
           <section data-panel="credits" hidden>
@@ -665,5 +690,6 @@
   <script src="js/novidades.js"></script> <!-- [NOVO] precisa vir antes de configuracoes.js (define APP_VERSION) -->
   <script src="js/configuracoes.js"></script>
   <script src="js/boas-vindas.js"></script>
+  <script src="js/feedback.js"></script> <!-- [NOVO] usa APP_VERSION, openSettings e showTab; envia por GitHub Issues -->
 </body>
 </html>

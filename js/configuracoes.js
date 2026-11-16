@@ -25,6 +25,8 @@ function flashSaved() { toast("Preferência salva.", 1400); }
 function showTab(tab) {
   document.querySelectorAll("#settings-nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
   document.querySelectorAll(".settings-content > section").forEach((s) => (s.hidden = s.dataset.panel !== tab));
+  // [NOVO] no celular a barra de abas rola de lado: traz a aba ativa para dentro da tela
+  document.querySelector(`#settings-nav button[data-tab="${tab}"]`)?.scrollIntoView({ block: "nearest", inline: "center" });
   // cada aba atualiza o que mostra quando é aberta
   ({ update: refreshUpdateTab, alerts: refreshAlertsTab, data: refreshDataTab, look: refreshLookTab }[tab] || (() => {}))();
 }

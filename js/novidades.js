@@ -22,6 +22,13 @@
 /* ---------- 1. Histórico (o primeiro é a versão atual) ---------- */
 const CHANGELOG = [
   {
+    version: "2.5",
+    date: "2026-11-15",
+    items: [
+      ["💬", "Agora dá para mandar ideias, problemas e elogios direto pelo app: ⚙ Configurações → Feedback, ou \"Enviar feedback\" no rodapé."],
+    ],
+  },
+  {
     version: "2.4",
     date: "2026-11-15",
     items: [
