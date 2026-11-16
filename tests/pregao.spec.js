@@ -370,3 +370,21 @@ test("privacidade: Saiba mais abre a aba e Apagar meus dados limpa o aparelho", 
   await btn.click();                                               // 2º clique apaga
   expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith("pregao.")))).toEqual([]);
 });
+
+test("privacidade: quem não configurou a chave vê o aviso a cada visita", async ({ context }) => {
+  const page = await context.newPage();
+  await setup(page, { keys: false, privacyBanner: true });
+  await page.goto("/index.html");
+  await page.click("#wz-demo");                                    // modo demonstração (sem chave)
+  const bar = page.locator("#privacy-banner");
+  await expect(bar).toBeVisible();
+  await page.click("#privacy-ok");
+  await page.reload();                                             // mesma visita: não repete
+  await page.waitForTimeout(1500);
+  await expect(bar).toBeHidden();
+
+  const outra = await context.newPage();                           // nova visita (outra aba)
+  await setup(outra, { keys: false, privacyBanner: true });
+  await outra.goto("/index.html");
+  await expect(outra.locator("#privacy-banner")).toBeVisible();
+});

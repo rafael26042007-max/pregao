@@ -25,7 +25,8 @@ const CHANGELOG = [
     version: "2.8",
     date: "2026-11-16",
     items: [
-      ["🍪", "Nova aba Privacidade: veja o que o Pregão guarda (sem cookies nem rastreamento) e para onde vão os pedidos."],
+      ["🍪", "Aviso de privacidade: o Pregão não usa cookies nem rastreamento. Quem ainda não configurou a própria chave vê o aviso a cada visita."],
+      ["🔒", "Nova aba Privacidade: veja o que o Pregão guarda neste aparelho e para onde vão os pedidos."],
       ["🧹", "Usou num computador compartilhado? Em Privacidade, \"Apagar meus dados deste aparelho\" apaga lista, carteira, alertas e chaves."],
     ],
   },
