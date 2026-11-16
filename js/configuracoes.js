@@ -224,7 +224,7 @@ function refreshDataTab() {
 function collectBackupData(withKeys, skip = []) {
   const data = {};
   for (const k of pregaoKeys()) {
-    if (CACHE_KEYS.includes(k) || skip.includes(k)) continue; // cache não precisa ir no backup
+    if (CACHE_KEYS.includes(k) || skip.includes(k) || k === "pregao.deviceId") continue; // cache e identidade do aparelho não vão no backup
     if (k === KEYS_KEY && !withKeys) continue;
     try { data[k] = JSON.parse(localStorage.getItem(k)); } catch { /* valor estragado: fica de fora */ }
   }

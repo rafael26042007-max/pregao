@@ -190,9 +190,16 @@ Se um teste falhar, o site **continua na versão anterior** e o GitHub manda um 
 ## Lançar uma versão nova
 
 1. Faça as mudanças no código.
-2. Em `js/novidades.js`, adicione a versão **no topo** do `CHANGELOG`, com o que mudou **para quem usa** (sem termos técnicos).
-3. Em `sw.js`, troque `CACHE` para `"pregao-v"` + a mesma versão (ex.: `pregao-v2.3`).
-4. `git push`.
+2. Escolha o número da versão:
+
+   | Tipo de mudança | Como numera | Exemplo |
+   |---|---|---|
+   | **Novidade importante** | sobe o primeiro número | `3.0` → `4.0` |
+   | **Só correção de bugs** | ganha um terceiro número, a partir de 100 | `4.0` → `4.0.100` → `4.0.101` |
+
+3. Em `js/novidades.js`, adicione a versão **no topo** do `CHANGELOG`, com o que mudou **para quem usa** (sem termos técnicos).
+4. Em `sw.js`, troque `CACHE` para `"pregao-v"` + a mesma versão (ex.: `pregao-v4.0.100`).
+5. `git push`.
 
 O resto é automático:
 ```
@@ -318,6 +325,7 @@ Pra criar um recurso novo, basta um arquivo em `js/` que use esses ganchos, mais
 
 | Versão | O que entrou |
 |---|---|
+| **3.0.100** | Correções: cada aparelho reconhece o próprio QR code/link · aba Chaves de API também traz dados por QR code |
 | **3.0** | QR code para passar tudo para outro aparelho (nos dois sentidos), pulando a configuração |
 | **2.9** | Topo não corta a ⚙ em janelas de 641 a 860 px · gráficos 1M/3M terminam no preço atual · filtro vazio explica o que fazer · aviso de privacidade espera as novidades |
 | **2.8** | Aviso de privacidade (sem cookies nem rastreamento) e aba Privacidade com "Apagar meus dados deste aparelho" |

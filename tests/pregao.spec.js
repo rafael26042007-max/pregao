@@ -479,11 +479,15 @@ test("QR: aparelho novo recebe tudo e pula o guia", async ({ browser }) => {
   await expect(b.locator("#welcome-overlay")).toBeHidden();
 });
 
-test("QR: sem marcar as chaves, elas não vão", async ({ page }) => {
+test("QR: sem marcar as chaves, elas não vão", async ({ browser }) => {
+  const page = await (await browser.newContext()).newPage();
   await setup(page, { keys: { finnhubKey: "CHAVE-SECRETA" }, list: ["MSFT"] });
   await page.goto("/index.html");
   const url = await qrUrlFrom(page, { keys: false });
-  const data = await page.evaluate((u) => decodeTransfer(codeFromText(u)), url);
+  const outro = await (await browser.newContext()).newPage();        // decodifica no OUTRO aparelho
+  await setup(outro);
+  await outro.goto("/index.html");
+  const data = await outro.evaluate((u) => decodeTransfer(codeFromText(u)), url);
   expect(data["pregao.config"]).toBeUndefined();
   expect(JSON.stringify(data)).not.toContain("CHAVE-SECRETA");
   expect(data["pregao.watchlist"]).toHaveLength(1);
@@ -517,10 +521,10 @@ test("QR: o leitor (jsQR) lê a imagem gerada, mesmo com lista grande", async ({
     return jsQR(ctx.getImageData(0, 0, 600, 600).data, 600, 600)?.data;
   });
   expect(read).toBe(url);
-  // lido no MESMO aparelho: os dados já são iguais, então só avisa
+  // lido no MESMO aparelho que criou: reconhece a própria identidade e manda abrir no outro
   await page.click("#qs-close");
   await page.evaluate((u) => handleScannedText(u), read);
-  await expect(page.locator(".toast")).toContainText("mesmos dados");
+  await expect(page.locator(".toast")).toContainText("criado neste próprio aparelho");
   await expect(page.locator("#transfer-overlay")).toBeHidden();
 });
 
@@ -602,4 +606,35 @@ test("QR: mostrando no celular, a instrução fala do computador", async ({ brow
   await page.goto("/index.html");
   await page.evaluate(() => openShareQr());
   await expect(page.locator("#qs-help")).toContainText("computador");
+});
+
+test("QR: o próprio link aberto no mesmo aparelho avisa para abrir no outro", async ({ page }) => {
+  await setup(page, { list: ["MSFT"] });
+  await page.goto("/index.html");
+  const url = await qrUrlFrom(page);
+  await page.goto(url.replace(/^https?:\/\/[^/]+/, ""));
+  await page.reload();
+  await expect(page.locator(".toast")).toContainText("OUTRO aparelho");
+  await expect(page.locator("#transfer-overlay")).toBeHidden();
+  // a identidade não vai no QR nem no backup
+  const data = await page.evaluate((u) => decodeTransfer(codeFromText(u)).catch((e) => e.message), url);
+  expect(data).toBe("MESMO_APARELHO");
+  expect(await page.evaluate(() => Object.keys(collectBackupData(true)))).not.toContain("pregao.deviceId");
+});
+
+test("QR: aba Chaves de API também oferece trazer por QR code", async ({ page }) => {
+  await page.addInitScript(() => { window.__pregaoCamera = false; });
+  await setup(page, { keys: false, storage: { "pregao.demo": true } });
+  await page.goto("/index.html");
+  await page.click("#btn-settings");
+  await expect(page.locator("#hint-qr")).toHaveText("Trazer do celular");
+  await page.click("#hint-qr");
+  await expect(page.locator("#scan-steps")).toBeVisible();
+});
+
+test("novidades: versão de correção aparece com o rótulo correções", async ({ page }) => {
+  await setup(page, { storage: { "pregao.seenVersion": "3.0", "pregao.watchlist": [] } });
+  await page.goto("/index.html");
+  await expect(page.locator("#news-overlay")).toBeVisible();
+  await expect(page.locator(".nv-badge").first()).toHaveText(/3\.0\.100 · correções/);
 });

@@ -30,7 +30,19 @@ const TRANSFER_TTL = 10 * 60 * 1000;
 // Marcado já ao carregar o script, antes do app iniciar: o guia (boas-vindas.js) não abre por cima
 window.__pregaoIncomingTransfer = /#transfer=/.test(location.hash);
 // Coisas deste aparelho que não fazem sentido no outro
-const TRANSFER_SKIP = ["pregao.seenVersion", "pregao.privacyOk", "pregao.feedbackQueue", "pregao.demo", "pregao.importMsg"];
+const TRANSFER_SKIP = ["pregao.seenVersion", "pregao.privacyOk", "pregao.feedbackQueue", "pregao.demo", "pregao.importMsg", "pregao.deviceId"];
+
+// [NOVO] Identidade deste aparelho: um código aleatório, criado na primeira vez.
+// Vai junto no QR para o aparelho saber quando está lendo o próprio código.
+// Não identifica a pessoa e nunca sai do aparelho por outro caminho.
+function deviceId() {
+  let id = load("pregao.deviceId", "");
+  if (!id) {
+    id = crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now();
+    save("pregao.deviceId", id);
+  }
+  return id;
+}
 
 /* ---------- 1. Codificar / decodificar ---------- */
 const b64url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -42,7 +54,7 @@ async function pipeBytes(bytes, stream) {
 }
 
 async function encodeTransfer(data) {
-  const json = new TextEncoder().encode(JSON.stringify({ e: Date.now() + TRANSFER_TTL, d: data }));
+  const json = new TextEncoder().encode(JSON.stringify({ e: Date.now() + TRANSFER_TTL, s: deviceId(), d: data }));
   if ("CompressionStream" in window) {
     try { return `1.z.${b64url(await pipeBytes(json, new CompressionStream("deflate-raw")))}`; } catch { /* cai no JSON puro */ }
   }
@@ -56,6 +68,7 @@ async function decodeTransfer(code) {
   if (kind === "z") bytes = await pipeBytes(bytes, new DecompressionStream("deflate-raw"));
   const obj = JSON.parse(new TextDecoder().decode(bytes));
   if (!obj || typeof obj.d !== "object") throw new Error("FORMATO");
+  if (obj.s && obj.s === deviceId()) throw new Error("MESMO_APARELHO"); // [NOVO] leu o próprio QR/link
   if (Date.now() > obj.e) throw new Error("EXPIRADO");
   return obj.d;
 }
@@ -223,9 +236,11 @@ async function receiveTransfer(code) {
     $("#transfer-overlay").hidden = false;
   } catch (err) {
     if (window.__pregaoIncomingTransfer) { window.__pregaoIncomingTransfer = false; if (!state.config.finnhubKey) emit("needKey"); }
-    toast(err.message === "EXPIRADO"
+    toast(err.message === "MESMO_APARELHO"
+      ? "Esse QR code/link foi criado neste próprio aparelho. Abra ele no OUTRO aparelho (por exemplo, no computador)."
+      : err.message === "EXPIRADO"
       ? "Esse QR code expirou. Gere outro no outro aparelho (vale 10 minutos)."
-      : "Não deu para ler os dados desse QR code. Gere outro e tente de novo.");
+      : "Não deu para ler os dados desse QR code. Gere outro e tente de novo.", 6000);
   }
 }
 
@@ -352,6 +367,7 @@ on("init", () => {
   $("#set-qr-show").addEventListener("click", openShareQr);
   $("#set-qr-scan").addEventListener("click", openScanner);
   $("#wz-qr").addEventListener("click", openScanner);
+  $("#hint-qr").addEventListener("click", openScanner);   // [NOVO] aba Chaves de API
   $("#qs-keys").addEventListener("change", renderShareQr);
   $("#qs-again").addEventListener("click", renderShareQr);
   $("#qs-link").addEventListener("click", shareLink);
@@ -360,6 +376,7 @@ on("init", () => {
     $("#wz-qr").textContent = cam
       ? "📷 Já uso em outro aparelho: ler QR code"
       : "📱 Já uso no celular: trazer de lá";
+    $("#hint-qr").textContent = cam ? "Ler QR code" : "Trazer do celular";
   });
   $("#qs-close").addEventListener("click", closeShareQr);
   $("#scan-close").addEventListener("click", () => closeScanner());

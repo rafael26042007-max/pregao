@@ -12,6 +12,9 @@
      a faixa "Nova versão pronta · Atualizar".
 
    COMO LANÇAR UMA VERSÃO NOVA
+   [NOVO] Numeração (a partir da 3.0.100):
+     • novidade importante → sobe o primeiro número: 3.0 → 4.0
+     • só correção de bugs → terceiro número a partir de 100: 4.0 → 4.0.100 → 4.0.101
    1. Adicione um item NO TOPO de CHANGELOG (versão, data, mudanças).
    2. Em sw.js, troque CACHE para "pregao-v" + a mesma versão.
       (o teste automático confere se os dois batem)
@@ -21,6 +24,14 @@
 
 /* ---------- 1. Histórico (o primeiro é a versão atual) ---------- */
 const CHANGELOG = [
+  {
+    version: "3.0.100",
+    date: "2026-11-16",
+    items: [
+      ["🪪", "Cada aparelho tem a sua identidade: abriu sem querer o próprio QR code ou link? O Pregão avisa para abrir no outro aparelho."],
+      ["🔑", "Na aba Chaves de API agora também dá para trazer tudo do celular por QR code ou link, e não só por backup."],
+    ],
+  },
   {
     version: "3.0",
     date: "2026-11-16",
@@ -141,7 +152,7 @@ function renderChangelog(entries, title) {
   $("#news-body").innerHTML = entries.map((e) => `
     <div class="nv-version">
       <div class="nv-head">
-        <span class="nv-badge">versão ${esc(e.version)}</span>
+        <span class="nv-badge">versão ${esc(e.version)}${String(e.version).split(".").length > 2 ? " · correções" : ""}</span>
         <span class="muted small">${new Date(e.date + "T12:00:00").toLocaleDateString("pt-BR")}</span>
       </div>
       <ul class="nv-list">${e.items.map(([icon, text]) => `<li><span class="nv-ico">${icon}</span><span>${esc(text)}</span></li>`).join("")}</ul>
