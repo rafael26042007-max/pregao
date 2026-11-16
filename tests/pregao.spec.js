@@ -561,3 +561,45 @@ test("QR: aparelho com dados diferentes vê o que entra e o que sai", async ({ b
   await expect(b.locator("#tr-list")).toContainText("saem TSLA");
   await expect(b.locator("#tr-list")).toContainText("as mesmas deste aparelho");
 });
+
+// [NOVO] Identificação do aparelho no QR code
+test("QR: PC sem câmera não abre tela preta e ensina o caminho pelo link", async ({ page }) => {
+  await page.addInitScript(() => { window.__pregaoCamera = false; });
+  await setup(page, { keys: false });
+  await page.goto("/index.html");
+  await expect(page.locator("#wz-qr")).toHaveText(/trazer de lá/);
+  await page.click("#wz-qr");
+  await expect(page.locator("#scan-title")).toHaveText("Este computador não tem câmera");
+  await expect(page.locator("#scan-video")).toBeHidden();
+  await expect(page.locator("#scan-steps")).toContainText("Enviar link");
+});
+
+test("QR: com câmera, o guia oferece ler o QR code", async ({ page }) => {
+  await page.addInitScript(() => { window.__pregaoCamera = true; });
+  await setup(page, { keys: false });
+  await page.goto("/index.html");
+  await expect(page.locator("#wz-qr")).toHaveText(/ler QR code/);
+});
+
+test("QR: no PC sem compartilhar do sistema, Copiar link copia o mesmo link do QR", async ({ browser }) => {
+  const ctx = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
+  const page = await ctx.newPage();
+  await page.addInitScript(() => Object.defineProperty(Navigator.prototype, "share", { value: undefined, configurable: true }));
+  await setup(page, { list: ["MSFT"] });
+  await page.goto("/index.html");
+  const url = await qrUrlFrom(page);
+  await expect(page.locator("#qs-help")).toContainText("celular");
+  await expect(page.locator("#qs-link")).toHaveText("Copiar link");
+  await page.click("#qs-link");
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(url);
+});
+
+test("QR: mostrando no celular, a instrução fala do computador", async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 380, height: 760 }, isMobile: true, hasTouch: true,
+    userAgent: "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Mobile Safari/537.36" });
+  const page = await ctx.newPage();
+  await setup(page, { list: ["MSFT"] });
+  await page.goto("/index.html");
+  await page.evaluate(() => openShareQr());
+  await expect(page.locator("#qs-help")).toContainText("computador");
+});

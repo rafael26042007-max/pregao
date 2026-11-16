@@ -60,6 +60,21 @@ async function decodeTransfer(code) {
   return obj.d;
 }
 
+/* ---------- 1.1 [NOVO] Que aparelho é este? ----------
+   Antes de oferecer "ler QR code", o app descobre se é celular/tablet ou computador
+   e se existe câmera. Assim um PC sem webcam não abre uma tela preta à toa. */
+const isMobileDevice = () =>
+  /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+  (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent)); // iPad se apresenta como Mac
+
+async function hasCamera() {
+  if (window.__pregaoCamera !== undefined) return window.__pregaoCamera;     // só nos testes
+  if (!navigator.mediaDevices?.getUserMedia) return false;
+  if (!navigator.mediaDevices.enumerateDevices) return true;               // não dá para saber: tenta
+  try { return (await navigator.mediaDevices.enumerateDevices()).some((d) => d.kind === "videoinput"); }
+  catch { return true; }
+}
+
 const transferUrl = (code) => `${location.origin}${location.pathname}#transfer=${code}`;
 const codeFromText = (text) => (String(text).match(/#transfer=([\w.-]+)/) || [])[1] || null;
 
@@ -101,8 +116,25 @@ async function renderShareQr() {
 
 function openShareQr() {
   closeSettings();
+  // [NOVO] instrução de acordo com este aparelho
+  $("#qs-help").innerHTML = isMobileDevice()
+    ? "No <b>computador</b>: abra o Pregão e toque em <b>Ler QR code</b> (precisa de webcam). Sem webcam? Toque em <b>Enviar link</b> e abra o link no computador."
+    : "No <b>celular</b>: aponte a <b>câmera normal</b> para o código e toque no link que aparecer.";
+  $("#qs-link").textContent = navigator.share ? "Enviar link" : "Copiar link";
   $("#qr-share-overlay").hidden = false;
   renderShareQr();
+}
+
+// [NOVO] Para quando o outro aparelho não tem câmera: manda o mesmo link por WhatsApp, e-mail…
+async function shareLink() {
+  const url = $("#qs-code").dataset.url;
+  if (!url) return;
+  if (navigator.share) {
+    try { await navigator.share({ title: "Pregão: meus dados", url }); } catch { /* cancelou */ }
+    return;
+  }
+  try { await navigator.clipboard.writeText(url); toast("Link copiado. Ele vale 10 minutos e leva o mesmo que o QR code."); }
+  catch { toast("Não deu para copiar. Use o QR code."); }
 }
 function closeShareQr() {
   clearInterval(shareTimer);
@@ -260,15 +292,23 @@ function handleScannedText(text) {
   return true;
 }
 
+// [NOVO] Sem câmera: em vez da tela preta, o passo a passo pelo link
+function showNoCamera() {
+  $("#scan-video").hidden = true;
+  $("#scan-title").textContent = isMobileDevice() ? "Este celular não liberou a câmera" : "Este computador não tem câmera";
+  $("#scan-msg").textContent = "";
+  $("#scan-steps").hidden = false;
+}
+
 async function openScanner() {
   closeSettings();
-  $("#welcome-overlay").hidden = true;      // o guia volta se a pessoa cancelar (recarregar)
+  $("#welcome-overlay").hidden = true;      // o guia volta se a pessoa fechar sem ler nada
   $("#qr-scan-overlay").hidden = false;
+  $("#scan-steps").hidden = true;
+  $("#scan-video").hidden = false;
+  $("#scan-title").textContent = "Aponte para o QR code do outro aparelho";
   $("#scan-msg").textContent = "Aponte a câmera para o QR code do outro aparelho.";
-  if (!navigator.mediaDevices?.getUserMedia) {
-    $("#scan-msg").textContent = "Este navegador não deixa usar a câmera. No celular, use a câmera normal do aparelho apontada para o QR code.";
-    return;
-  }
+  if (!(await hasCamera())) { showNoCamera(); return; }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
     const video = $("#scan-video");
@@ -288,9 +328,10 @@ async function openScanner() {
     };
     loop();
   } catch (err) {
-    $("#scan-msg").textContent = err && err.name === "NotAllowedError"
-      ? "Sem permissão para a câmera. Libere no cadeado ao lado do endereço e tente de novo."
-      : "Não encontrei uma câmera neste aparelho. Faça ao contrário: mostre o QR aqui e leia no celular.";
+    if (err && err.name === "NotAllowedError") {
+      $("#scan-msg").textContent = "Sem permissão para a câmera. Libere no cadeado ao lado do endereço e tente de novo, ou use o link abaixo.";
+      $("#scan-steps").hidden = false;
+    } else showNoCamera();                   // câmera sumiu ou está em uso por outro programa
   }
 }
 
@@ -313,6 +354,13 @@ on("init", () => {
   $("#wz-qr").addEventListener("click", openScanner);
   $("#qs-keys").addEventListener("change", renderShareQr);
   $("#qs-again").addEventListener("click", renderShareQr);
+  $("#qs-link").addEventListener("click", shareLink);
+  // [NOVO] o botão do guia já diz o que vai acontecer neste aparelho
+  hasCamera().then((cam) => {
+    $("#wz-qr").textContent = cam
+      ? "📷 Já uso em outro aparelho: ler QR code"
+      : "📱 Já uso no celular: trazer de lá";
+  });
   $("#qs-close").addEventListener("click", closeShareQr);
   $("#scan-close").addEventListener("click", () => closeScanner());
   $("#tr-ok").addEventListener("click", confirmTransfer);

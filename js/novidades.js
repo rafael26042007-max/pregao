@@ -27,6 +27,7 @@ const CHANGELOG = [
     items: [
       ["📷", "Passe tudo para outro aparelho por QR code: lista, carteira, alertas e chaves. O aparelho novo já sai configurado, sem o passo a passo."],
       ["🔁", "Funciona nos dois sentidos: mostre o QR no PC e leia com a câmera do celular, ou o contrário (⚙ → Dados e backup)."],
+      ["🖥️", "O Pregão reconhece se o aparelho tem câmera. Sem câmera, ele ensina a trazer os dados por um link (Enviar link)."],
       ["✅", "Se o aparelho já tiver os mesmos dados, ele só avisa. Se tiver diferenças, mostra o que entra e o que sai antes de atualizar."],
     ],
   },

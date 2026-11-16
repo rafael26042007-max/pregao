@@ -737,9 +737,10 @@
       <button type="button" class="icon-btn drawer-close" id="qs-close" aria-label="Fechar">✕</button>
       <span class="wz-kicker">Passar para outro aparelho</span>
       <h3 id="qs-title">Leia este QR code no outro aparelho</h3>
-      <p class="muted small">No celular, dá para usar a <b>câmera normal</b>. No PC, abra o Pregão e vá em ⚙ → Dados e backup → <b>Ler QR code</b>.</p>
+      <p class="muted small" id="qs-help"></p> <!-- [ALTERADO] texto muda conforme o aparelho -->
       <div class="qs-code" id="qs-code"></div>
-      <div class="qs-foot"><span class="muted small" id="qs-timer"></span><button type="button" class="link-btn" id="qs-again" hidden>Gerar outro</button></div>
+      <div class="qs-foot"><span class="muted small" id="qs-timer"></span><button type="button" class="link-btn" id="qs-again" hidden>Gerar outro</button>
+        <button type="button" class="link-btn" id="qs-link">Enviar link</button></div> <!-- [NOVO] para quem não tem câmera -->
       <label class="check-line"><input type="checkbox" id="qs-keys" checked /> Incluir minhas chaves de API (o outro aparelho já sai configurado)</label>
       <p class="qs-warn small">⚠️ Quem fotografar este código leva as suas chaves. Não mostre para outras pessoas.</p>
     </div>
@@ -753,6 +754,12 @@
       <h3 id="scan-title">Aponte para o QR code do outro aparelho</h3>
       <video id="scan-video" class="scan-video" playsinline muted></video>
       <p class="muted small" id="scan-msg" role="status"></p>
+      <!-- [NOVO] sem câmera: traz os dados pelo link -->
+      <ol class="scan-steps" id="scan-steps" hidden>
+        <li>No aparelho que já usa o Pregão, abra <b>⚙ → Dados e backup → Mostrar QR code</b>.</li>
+        <li>Toque em <b>Enviar link</b> e mande para você mesmo (WhatsApp, e-mail…).</li>
+        <li>Abra esse link <b>aqui</b>, em até 10 minutos. Os dados chegam e o Pregão já sai configurado.</li>
+      </ol>
     </div>
   </div>
 
