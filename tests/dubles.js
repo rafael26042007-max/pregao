@@ -75,6 +75,11 @@ async function setup(page, o = {}) {
 
       if (host.includes("er-api") || host.includes("frankfurter")) return ok({ rates: { USD: 1, BRL: 5.0, EUR: 0.9, GBP: 0.8, JPY: 150 }, time_last_update_utc: new Date().toUTCString(), date: "2026-11-13" });
       if (host.includes("binance")) return ok({ openPrice: "89000", highPrice: "91000", lowPrice: "88000", lastPrice: "90000", volume: "1000" });
+      if (host === "docs.google.com") {                       // [NOVO] Google Forms do feedback
+        if (o.feedbackOffline) throw new TypeError("Failed to fetch");
+        (window.__calls.feedback ||= []).push(Object.fromEntries(new URLSearchParams(init.body)));
+        return { ok: false, status: 0, type: "opaque" };     // no-cors: resposta "opaca"
+      }
       if (host.includes("twelvedata")) return ok({ status: "ok", daily_usage: 1, plan_daily_limit: 800, meta: { exchange_timezone: "America/New_York" }, values: [] });
       return fail(404);
     };

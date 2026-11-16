@@ -22,6 +22,14 @@
 /* ---------- 1. Histórico (o primeiro é a versão atual) ---------- */
 const CHANGELOG = [
   {
+    version: "2.6",
+    date: "2026-11-15",
+    items: [
+      ["🔒", "O feedback agora é privado e não precisa de conta: é só escrever e tocar em Enviar."],
+      ["📶", "Sem internet? A mensagem fica guardada e é enviada sozinha quando a conexão voltar."],
+    ],
+  },
+  {
     version: "2.5",
     date: "2026-11-15",
     items: [

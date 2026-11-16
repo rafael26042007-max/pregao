@@ -443,8 +443,8 @@
           <!-- ---------- [NOVO] Aba: Feedback (js/feedback.js) ---------- -->
           <section data-panel="feedback" hidden>
             <p class="fb-intro">Achou um problema ou teve uma ideia? Conta aqui. <b>O Rafael lê cada mensagem</b> para decidir as próximas melhorias do Pregão.</p>
-            <!-- [NOVO] o envio é por GitHub Issues: avisar antes que é público e precisa de conta -->
-            <p class="fb-note small">🌐 Sua mensagem vira uma <b>issue pública</b> no GitHub do Pregão. Você vai precisar de uma conta no GitHub (grátis). <b>Não escreva dados pessoais</b> como e-mail, telefone ou suas chaves.</p>
+            <!-- [ALTERADO] agora vai pelo Google Forms: privado e sem conta -->
+            <p class="fb-note small">🔒 Só o Rafael lê. Não precisa de conta nem de login.</p>
             <form id="fb-form" class="fb-form" novalidate>
               <div class="segmented fb-type" id="fb-type" role="group" aria-label="Tipo de feedback"></div>
               <label class="fb-field">
@@ -452,14 +452,21 @@
                 <textarea id="fb-msg" rows="5" required></textarea>
                 <small class="muted" id="fb-count">0/1500</small>
               </label>
+              <label class="fb-field"> <!-- [NOVO] voltou: no Forms só o Rafael vê -->
+                <span class="small">Seu e-mail ou @ <span class="muted">(opcional, só se quiser resposta)</span></span>
+                <input id="fb-contact" type="text" autocomplete="email" maxlength="120" />
+              </label>
               <label class="fb-check"><input type="checkbox" id="fb-tech" checked /> <span>Incluir detalhes técnicos <span class="muted">(ajuda a achar problemas)</span></span></label>
               <details id="fb-tech-see" class="fb-see">
                 <summary class="small">Ver o que vai junto</summary>
                 <code id="fb-preview"></code>
                 <p class="muted small">Nunca vão junto: suas chaves de API, sua carteira ou sua lista de ações.</p>
               </details>
-              <button class="btn btn-primary" id="fb-send" type="submit" disabled>Continuar no GitHub ↗</button> <!-- [ALTERADO] -->
+              <button class="btn btn-primary" id="fb-send" type="submit" disabled>Enviar</button> <!-- [ALTERADO] -->
               <div class="fb-done" id="fb-done" hidden role="status"><b></b><span class="muted small"></span></div>
+              <p class="muted small" id="fb-pending" hidden></p>
+              <!-- [NOVO] caminho alternativo -->
+              <p class="muted small fb-alt">Tem conta no GitHub e prefere uma issue pública? <a href="#" id="fb-github">Abrir no GitHub ↗</a></p>
             </form>
           </section>
 
@@ -690,6 +697,6 @@
   <script src="js/novidades.js"></script> <!-- [NOVO] precisa vir antes de configuracoes.js (define APP_VERSION) -->
   <script src="js/configuracoes.js"></script>
   <script src="js/boas-vindas.js"></script>
-  <script src="js/feedback.js"></script> <!-- [NOVO] usa APP_VERSION, openSettings e showTab; envia por GitHub Issues -->
+  <script src="js/feedback.js"></script> <!-- [NOVO] usa APP_VERSION, openSettings e showTab; envia pelo Google Forms; GitHub como alternativa -->
 </body>
 </html>

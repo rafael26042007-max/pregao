@@ -968,3 +968,5 @@ body.sheet-open { overflow: hidden; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (max-width: 640px) { #fb-send { align-self: stretch; } }
 .fb-type button { white-space: nowrap; }
+.fb-alt { margin: 4px 0 0; }
+.fb-alt a { color: var(--accent); }
