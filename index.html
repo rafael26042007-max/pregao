@@ -240,6 +240,7 @@
           <button type="button" data-tab="update">Atualização</button>
           <button type="button" data-tab="alerts">Alertas</button>
           <button type="button" data-tab="data">Dados e backup</button>
+          <button type="button" data-tab="privacy">Privacidade</button> <!-- [NOVO] js/privacidade.js -->
           <button type="button" data-tab="about">Sobre</button>
           <button type="button" data-tab="feedback">Feedback</button> <!-- [NOVO] js/feedback.js -->
           <button type="button" data-tab="credits">Créditos</button> <!-- [NOVO] -->
@@ -404,6 +405,29 @@
             <div class="set-row danger-zone">
               <div><b>Apagar tudo</b><small>Volta o Pregão ao estado de fábrica, inclusive as chaves.</small></div>
               <button type="button" class="btn btn-ghost btn-sm danger" id="set-reset">Apagar tudo</button>
+            </div>
+          </section>
+
+          <!-- ---------- [NOVO] Aba Privacidade (js/privacidade.js) ---------- -->
+          <section data-panel="privacy" hidden>
+            <p class="pv-lead">🍪 <b>O Pregão não usa cookies.</b> Nem rastreamento, anúncios ou contador de visitas.</p>
+
+            <h5 class="set-sub">O que fica guardado neste aparelho</h5>
+            <ul class="pv-list">
+              <li>Sua lista de ações, a ordem e os filtros</li>
+              <li>Sua carteira e seus alertas</li>
+              <li>Suas chaves de API</li>
+              <li>Preferências: moeda, tema, tempo de atualização</li>
+              <li>Cópias de gráficos e cotações, para abrir mais rápido</li>
+            </ul>
+            <p class="muted small">Nada disso vai para um servidor do Pregão, porque ele não tem servidor. Fica só no navegador deste aparelho, e só você vê.</p>
+
+            <h5 class="set-sub">Para onde vão os pedidos</h5>
+            <p class="small pv-text">Para mostrar os preços, o seu aparelho pergunta direto para <b>Finnhub</b>, <b>brapi</b>, <b>Twelve Data</b>, <b>Binance</b> e os serviços de câmbio. Eles recebem só o código da ação (ex.: PETR4), a sua chave e, como qualquer site, o seu endereço de internet. O <b>feedback</b> só sai do aparelho quando você toca em Enviar.</p>
+
+            <div class="set-row danger-zone">
+              <div><b>Computador compartilhado?</b><small>Apague antes de sair: lista, carteira, alertas e chaves deste navegador.</small></div>
+              <button type="button" class="btn btn-ghost btn-sm danger" id="privacy-reset">Apagar meus dados deste aparelho</button>
             </div>
           </section>
 
@@ -697,6 +721,15 @@
   <script src="js/novidades.js"></script> <!-- [NOVO] precisa vir antes de configuracoes.js (define APP_VERSION) -->
   <script src="js/configuracoes.js"></script>
   <script src="js/boas-vindas.js"></script>
+  <!-- [NOVO] Aviso de privacidade (1ª visita) -->
+  <div class="privacy-banner" id="privacy-banner" hidden role="region" aria-label="Privacidade">
+    <span>🍪 <b>Sem cookies nem rastreamento.</b> Sua lista, chaves e preferências ficam só neste aparelho.</span>
+    <span class="pv-actions">
+      <button type="button" class="btn btn-ghost btn-sm" id="privacy-more">Saiba mais</button>
+      <button type="button" class="btn btn-primary btn-sm" id="privacy-ok">Entendi</button>
+    </span>
+  </div>
   <script src="js/feedback.js"></script> <!-- [NOVO] usa APP_VERSION, openSettings e showTab; envia pelo Google Forms; GitHub como alternativa -->
+  <script src="js/privacidade.js"></script> <!-- [NOVO] usa armResetButton, openSettings e showTab -->
 </body>
 </html>

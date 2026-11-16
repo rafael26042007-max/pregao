@@ -22,6 +22,14 @@
 /* ---------- 1. Histórico (o primeiro é a versão atual) ---------- */
 const CHANGELOG = [
   {
+    version: "2.8",
+    date: "2026-11-16",
+    items: [
+      ["🍪", "Nova aba Privacidade: veja o que o Pregão guarda (sem cookies nem rastreamento) e para onde vão os pedidos."],
+      ["🧹", "Usou num computador compartilhado? Em Privacidade, \"Apagar meus dados deste aparelho\" apaga lista, carteira, alertas e chaves."],
+    ],
+  },
+  {
     version: "2.7",
     date: "2026-11-15",
     items: [

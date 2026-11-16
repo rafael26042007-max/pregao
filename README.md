@@ -111,6 +111,7 @@ O app instalado se atualiza sozinho: cada mudança publicada aparece na próxima
 - **Tema claro, escuro ou do sistema** (botão ☀/☾ no topo ou em Configurações).
 - **App instalável (PWA)**: botão **Baixar app**, ícone na tela inicial, abre sem a barra do navegador e até abre sem internet (os preços voltam quando a conexão volta).
 - **Modo aplicativo**: no app instalado, bloqueia F12, Ctrl+Shift+I, Ctrl+U e o botão direito. Desligue em ⚙ → Aparência quando for programar. Não é segurança: o DevTools ainda abre pelo menu ⋮ do navegador.
+- **Privacidade**: o Pregão não usa cookies nem rastreamento. Na 1ª visita aparece um aviso dizendo isso, e em ⚙ → **Privacidade** dá para ver o que fica guardado no aparelho, para onde vão os pedidos e **apagar os dados deste aparelho** (útil em computador compartilhado).
 - **Feedback**: ⚙ → **Feedback** (ou "Enviar feedback" no rodapé). A pessoa escolhe Ideia, Problema ou Elogio, escreve e envia. A mensagem vai para o formulário **"Feedback do Pregão"** (Google Forms) e cai na planilha **"Feedback do Pregão (respostas)"** no Google Drive do Rafael: privado, sem conta, e funciona sem internet (envia depois). Quem preferir pode abrir uma **issue no GitHub** já preenchida (etiqueta `feedback`). Chaves, carteira e lista nunca vão junto.
 - **Novidades a cada versão**: quando sai uma atualização, aparece o aviso **"Nova versão pronta · Atualizar"** e, depois, uma janela com o que mudou (só o que importa pra quem usa). O histórico fica em ⚙ → Sobre → **Ver novidades**.
 - **Várias abas** abertas não brigam pela conexão: só uma conecta e repassa os preços para as outras.
@@ -250,6 +251,7 @@ js/boas-vindas.js     → guia de primeiros passos e modo demonstração
 js/novidades.js       → histórico de versões (CHANGELOG) e janela "O que há de novo"
 js/feedback.js        → aba Feedback: envia pro Google Forms (fila sem internet) ou abre issue no GitHub
 .github/ISSUE_TEMPLATE/feedback.md → modelo que põe a etiqueta "feedback" nas issues do app
+js/privacidade.js     → aviso de privacidade na 1ª visita e aba Privacidade (apagar dados do aparelho)
 js/seletor.js         → no celular, abre as opções dos <select> numa gaveta com as cores do tema
 sw.js                 → service worker (app instalável / abre sem internet)
 sitemap.xml           → mapa do site para o Google
@@ -289,6 +291,7 @@ Pra criar um recurso novo, basta um arquivo em `js/` que use esses ganchos, mais
 | `pregao.listview` | Filtro e ordenação da lista |
 | `pregao.theme` / `pregao.currency` | Tema e moeda |
 | `pregao.demo` | Escolheu o modo demonstração |
+| `pregao.privacyOk` | se a pessoa já fechou o aviso de privacidade |
 | `pregao.seenVersion` | Última versão cujas novidades a pessoa viu |
 | `pregao.hist` / `pregao.b3cache` | Cache de gráficos e últimas cotações da B3 |
 
@@ -312,7 +315,8 @@ Pra criar um recurso novo, basta um arquivo em `js/` que use esses ganchos, mais
 
 | Versão | O que entrou |
 |---|---|
-| **2.7** | Novidades só aparecem depois que a atualização termina de instalar; sem faixa \"Atualizar\" quando a página já é a nova |
+| **2.8** | Aviso de privacidade (sem cookies nem rastreamento) e aba Privacidade com "Apagar meus dados deste aparelho" |
+| **2.7** | Novidades só aparecem depois que a atualização termina de instalar; sem faixa "Atualizar" quando a página já é a nova |
 | **2.6** | Feedback privado pelo Google Forms, sem conta e com envio depois quando estiver sem internet; GitHub vira alternativa |
 | **2.5** | Aba Feedback: ideias, problemas e elogios viram issues no GitHub |
 | **2.4** | Celular: listas de opções numa gaveta com as cores do Pregão · nome de cada moeda · botão voltar fecha a gaveta |

@@ -970,3 +970,24 @@ body.sheet-open { overflow: hidden; }
 .fb-type button { white-space: nowrap; }
 .fb-alt { margin: 4px 0 0; }
 .fb-alt a { color: var(--accent); }
+
+/* =========================================================
+   [NOVO] 11.4 Privacidade (js/privacidade.js)
+   ========================================================= */
+.privacy-banner {
+  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+  width: min(720px, calc(100% - 24px));
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 10px 12px 10px 16px; z-index: 41;
+  background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: 14px;
+  box-shadow: var(--shadow); font-size: 13.5px; color: var(--text-2); line-height: 1.45;
+}
+.privacy-banner b { color: var(--text); }
+.pv-actions { display: flex; gap: 8px; flex-shrink: 0; }
+@media (max-width: 640px) {
+  .privacy-banner { flex-direction: column; align-items: stretch; text-align: center; bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .pv-actions > * { flex: 1; }
+}
+.pv-lead { margin: 0 0 18px; font-size: 15px; }
+.pv-list { margin: 0 0 8px; padding-left: 20px; line-height: 1.8; color: var(--text-2); }
+.pv-text { color: var(--text-2); line-height: 1.6; margin: 0 0 18px; }

@@ -271,18 +271,23 @@ function bindDataTab() {
     toast("Cache limpo.");
   });
 
-  // Apagar tudo pede confirmação com um segundo clique (sem janela do navegador)
+  armResetButton($("#set-reset"), "Apagar tudo");
+}
+
+// [ALTERADO] Virou função: também é usada em ⚙ → Privacidade (js/privacidade.js).
+// Pede confirmação com um segundo clique (sem janela do navegador).
+function armResetButton(btn, label) {
   let armed = null;
-  const reset = $("#set-reset");
-  reset.addEventListener("click", () => {
+  btn.addEventListener("click", () => {
     if (!armed) {
-      reset.textContent = "Clique de novo para confirmar";
-      armed = setTimeout(() => { armed = null; reset.textContent = "Apagar tudo"; }, 4000);
+      btn.textContent = "Toque de novo para confirmar";
+      armed = setTimeout(() => { armed = null; btn.textContent = label; }, 4000);
       return;
     }
     window.__pregaoFrozen = true;              // [CORRIGIDO] idem ao importar
     pregaoKeys().forEach((k) => localStorage.removeItem(k));
-    toast("Tudo apagado. Recarregando…");
+    sessionStorage.clear();                    // [NOVO] avisos temporários desta aba
+    toast("Tudo apagado deste aparelho. Recarregando…");
     setTimeout(() => location.reload(), 900);
   });
 }

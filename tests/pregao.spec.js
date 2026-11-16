@@ -342,3 +342,31 @@ test("novidades: com o instalador de verdade, aparecem quando ele já é da vers
   expect(await page.evaluate(() => installedVersion())).toBe(cur);
   await expect(page.locator("#news-overlay")).toBeVisible({ timeout: 5000 });
 });
+
+// [NOVO] Privacidade (js/privacidade.js)
+test("privacidade: aviso na 1ª visita, Entendi guarda e não volta", async ({ page }) => {
+  await setup(page, { privacyBanner: true });
+  await page.goto("/index.html");
+  const bar = page.locator("#privacy-banner");
+  await expect(bar).toBeVisible();
+  await expect(bar).toContainText("Sem cookies");
+  await page.click("#privacy-ok");
+  await expect(bar).toBeHidden();
+  await page.reload();
+  await page.waitForTimeout(1500);
+  await expect(bar).toBeHidden();
+});
+
+test("privacidade: Saiba mais abre a aba e Apagar meus dados limpa o aparelho", async ({ page }) => {
+  await setup(page, { privacyBanner: true, list: ["MSFT"] });
+  await page.goto("/index.html");
+  await page.click("#privacy-more");
+  await expect(page.locator('section[data-panel="privacy"]')).toBeVisible();
+  await expect(page.locator('section[data-panel="privacy"]')).toContainText("não usa cookies");
+  const btn = page.locator("#privacy-reset");
+  await btn.click();
+  await expect(btn).toHaveText("Toque de novo para confirmar");   // 1º clique só arma
+  expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith("pregao.")).length)).toBeGreaterThan(0);
+  await btn.click();                                               // 2º clique apaga
+  expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith("pregao.")))).toEqual([]);
+});

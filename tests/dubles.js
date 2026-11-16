@@ -27,6 +27,8 @@ async function setup(page, o = {}) {
       if (o.list) localStorage.setItem("pregao.watchlist", JSON.stringify(o.list.map((s) => ({ symbol: s, name: s }))));
       // por padrão a pessoa já viu as novidades (senão a janela cobre a tela nos outros testes)
       if (o.keys !== false) localStorage.setItem("pregao.seenVersion", JSON.stringify("999"));
+      // e já fechou o aviso de privacidade (o teste dele usa privacyBanner: true)
+      if (!o.privacyBanner) localStorage.setItem("pregao.privacyOk", "true");
       for (const [k, v] of Object.entries(o.storage || {})) localStorage.setItem(k, JSON.stringify(v));
     }
 
