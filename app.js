@@ -641,12 +641,23 @@ async function loadHistory(symbol, range, priority = false) {
 // Pontos que o gráfico desenha em cada período
 function seriesFor(r, range) {
   const h = r.hist && r.hist[range];
-  if (range !== "1D") return h ? h.pts : [];
+  if (range !== "1D") return withLivePrice(h ? h.pts : [], r); // [ALTERADO] 1M/3M terminam no preço de agora
   // 1D = histórico do último pregão + negócios ao vivo que chegaram depois
   const base = h ? h.pts : [];
   if (!base.length) return r.ticks;
   const lastT = base[base.length - 1].t;
   return base.concat(r.ticks.filter((t) => t.t > lastT));
+}
+
+// [NOVO] O histórico de 1M/3M traz só fechamentos diários (e fica guardado por horas),
+// então o último ponto não batia com o preço mostrado em cima. Aqui o preço atual
+// substitui o ponto de hoje, ou entra no fim se o histórico ainda não tem hoje.
+function withLivePrice(pts, r) {
+  if (!pts.length || r.price == null || !r.lastTs) return pts;
+  const last = pts[pts.length - 1];
+  if (r.lastTs < last.t) return pts;                                  // preço mais velho que o histórico
+  const sameDay = new Date(r.lastTs).toDateString() === new Date(last.t).toDateString();
+  return sameDay ? pts.slice(0, -1).concat({ t: last.t, p: r.price }) : pts.concat({ t: r.lastTs, p: r.price });
 }
 
 /* =========================================================

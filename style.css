@@ -840,6 +840,14 @@ html, body { overflow-x: hidden; }
   #ws-status .pill-text { display: none; }
   .icon-btn { width: 36px; height: 36px; }
 }
+/* [CORRIGIDO] Entre o celular e o PC (janela estreita, tablet) a ⚙ também saía da tela:
+   o botão de baixar vira só o ícone e a pílula do ao vivo vira só a bolinha. */
+@media (min-width: 641px) and (max-width: 860px) {
+  .install-label { display: none; }
+  #ws-status .pill-text { display: none; }
+  #ws-status { padding: 9px; }
+  .status-group { gap: 8px; }
+}
 body.has-demo-banner .toast { bottom: 104px; } /* [NOVO] avisos não ficam em cima da faixa */
 
 /* ---------- 10.1 [NOVO] Aba Créditos ---------- */

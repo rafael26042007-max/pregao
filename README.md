@@ -315,6 +315,7 @@ Pra criar um recurso novo, basta um arquivo em `js/` que use esses ganchos, mais
 
 | Versão | O que entrou |
 |---|---|
+| **2.9** | Topo não corta a ⚙ em janelas de 641 a 860 px · gráficos 1M/3M terminam no preço atual · filtro vazio explica o que fazer · aviso de privacidade espera as novidades |
 | **2.8** | Aviso de privacidade (sem cookies nem rastreamento) e aba Privacidade com "Apagar meus dados deste aparelho" |
 | **2.7** | Novidades só aparecem depois que a atualização termina de instalar; sem faixa "Atualizar" quando a página já é a nova |
 | **2.6** | Feedback privado pelo Google Forms, sem conta e com envio depois quando estiver sem internet; GitHub vira alternativa |

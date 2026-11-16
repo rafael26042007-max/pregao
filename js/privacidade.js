@@ -33,6 +33,7 @@ function showPrivacyBanner() {
   // Espera o guia de primeiros passos fechar, para não empilhar duas coisas na tela
   const tryShow = () => {
     if (!$("#welcome-overlay").hidden) return setTimeout(tryShow, 800);
+    if (!$("#news-overlay").hidden) return setTimeout(tryShow, 800);   // [CORRIGIDO] não aparece junto com "O que há de novo"
     // Se a faixa do modo demonstração estiver embaixo, fica logo acima dela
     const demo = $("#demo-banner");
     bar.style.bottom = demo && !demo.hidden ? `${demo.offsetHeight + 30}px` : "";

@@ -388,3 +388,55 @@ test("privacidade: quem não configurou a chave vê o aviso a cada visita", asyn
   await outra.goto("/index.html");
   await expect(outra.locator("#privacy-banner")).toBeVisible();
 });
+
+// [NOVO] Achados do teste como usuário (16/11)
+test("topo: a ⚙ cabe na tela em qualquer largura (320 a 1000 px)", async ({ page }) => {
+  await setup(page, { list: ["MSFT"] });
+  await page.goto("/index.html");
+  for (const currency of ["orig", "BRL"]) {          // "Moeda original" é o rótulo mais largo
+    await page.setViewportSize({ width: 1000, height: 700 });
+    await page.evaluate((c) => localStorage.setItem("pregao.currency", JSON.stringify(c)), currency);
+    await page.reload();
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => state.currency)).toBe(currency);
+    for (let w = 320; w <= 1000; w += 10) {
+      await page.setViewportSize({ width: w, height: 700 });
+      const r = await page.evaluate(() => ({ right: document.querySelector("#btn-settings").getBoundingClientRect().right, vw: innerWidth }));
+      expect(r.right, `largura ${w} px, moeda ${currency}`).toBeLessThanOrEqual(r.vw);
+    }
+  }
+});
+
+test("privacidade: a faixa espera a janela de novidades fechar", async ({ page }) => {
+  await setup(page, { privacyBanner: true, storage: { "pregao.seenVersion": "2.0", "pregao.watchlist": [] } });
+  await page.goto("/index.html");
+  await expect(page.locator("#news-overlay")).toBeVisible();
+  await page.waitForTimeout(2000);
+  await expect(page.locator("#privacy-banner")).toBeHidden();        // não aparece junto
+  await page.click("#news-ok");
+  await expect(page.locator("#privacy-banner")).toBeVisible();
+});
+
+test("lista: filtro vazio diz o que fazer", async ({ page }) => {
+  await setup(page, { list: ["MSFT"] });
+  await page.goto("/index.html");
+  await page.click('#list-filter button[data-f="pos"]');
+  await expect(page.locator("#filter-empty")).toContainText("Minha posição");
+  await page.click('#list-filter button[data-f="b3"]');
+  await expect(page.locator("#filter-empty")).toContainText("Petrobras");
+});
+
+test("gráfico 1M/3M: o último ponto é o preço de agora", async ({ page }) => {
+  await setup(page, { list: ["MSFT"] });
+  await page.goto("/index.html");
+  const r = await page.evaluate(() => {
+    const day = 864e5, now = Date.now();
+    const rr = { price: 41.30, lastTs: now, hist: { "1M": { pts: [{ t: now - 3 * day, p: 40 }, { t: now - 2 * day, p: 41.68 }] } } };
+    const novoDia = seriesFor(rr, "1M");
+    rr.hist["1M"].pts.push({ t: now - 60_000, p: 41.5 });            // histórico já tem hoje
+    const mesmoDia = seriesFor(rr, "1M");
+    return { novoDia: novoDia.map((p) => p.p), mesmoDia: mesmoDia.map((p) => p.p) };
+  });
+  expect(r.novoDia).toEqual([40, 41.68, 41.30]);   // entrou no fim
+  expect(r.mesmoDia).toEqual([40, 41.68, 41.30]);  // trocou o ponto de hoje
+});

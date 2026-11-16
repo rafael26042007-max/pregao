@@ -22,6 +22,16 @@
 /* ---------- 1. Histórico (o primeiro é a versão atual) ---------- */
 const CHANGELOG = [
   {
+    version: "2.9",
+    date: "2026-11-16",
+    items: [
+      ["🖥️", "Em janelas estreitas e tablets, o botão de Configurações não fica mais cortado no topo."],
+      ["📈", "Os gráficos de 1 e 3 meses agora terminam no preço de agora."],
+      ["💼", "Filtro vazio explica o que fazer, por exemplo como colocar uma ação na carteira."],
+      ["🧹", "O aviso de privacidade não aparece mais junto com a janela de novidades."],
+    ],
+  },
+  {
     version: "2.8",
     date: "2026-11-16",
     items: [

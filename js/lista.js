@@ -71,6 +71,14 @@ function applyView() {
     if (show) visible++;
   }
   $("#filter-empty").hidden = !(state.list.length && !visible);
+  // [NOVO] diz o que fazer, e não só que está vazio
+  const EMPTY_HINT = {
+    pos: "Nenhum ativo na carteira ainda. Abra uma ação da sua lista e preencha \"Minha posição\" com quantas você tem e o preço que pagou.",
+    us: "Nenhuma ação dos EUA na sua lista. Pesquise, por exemplo, Apple ou NVDA.",
+    b3: "Nenhuma ação da B3 na sua lista. Pesquise, por exemplo, Petrobras ou VALE3.",
+    crypto: "Nenhuma cripto na sua lista. Pesquise, por exemplo, Bitcoin.",
+  };
+  $("#filter-empty p").textContent = EMPTY_HINT[view.filter] || "Nenhum ativo neste filtro.";
 
   document.querySelectorAll("#list-filter button").forEach((b) => b.classList.toggle("on", b.dataset.f === view.filter));
   $("#list-sort").value = view.sort;
