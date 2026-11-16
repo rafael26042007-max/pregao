@@ -8,7 +8,7 @@
    preço velho seria pior do que nenhum preço.
    Mude CACHE ao alterar esta lista de arquivos.
    ========================================================= */
-const CACHE = "pregao-v2.6"; // [ALTERADO] = versão do topo de CHANGELOG em js/novidades.js (o teste confere)
+const CACHE = "pregao-v2.7"; // [ALTERADO] = versão do topo de CHANGELOG em js/novidades.js (o teste confere)
 const APP_FILES = [
   "./",
   "index.html",
@@ -62,6 +62,12 @@ self.addEventListener("fetch", (e) => {
       })
       .catch(() => caches.match(e.request, { ignoreSearch: true }))
   );
+});
+
+// [NOVO] A página pergunta "qual versão você já instalou?" (js/novidades.js, bloco 4).
+// As novidades só aparecem quando a resposta é igual à versão da página.
+self.addEventListener("message", (e) => {
+  if (e.data?.type === "version" && e.ports[0]) e.ports[0].postMessage(CACHE.replace("pregao-v", ""));
 });
 
 // Clicar na notificação de alerta abre/foca o app

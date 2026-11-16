@@ -22,6 +22,13 @@
 /* ---------- 1. Histórico (o primeiro é a versão atual) ---------- */
 const CHANGELOG = [
   {
+    version: "2.7",
+    date: "2026-11-15",
+    items: [
+      ["✅", "As novidades agora só aparecem depois que a atualização termina de instalar, e não antes."],
+    ],
+  },
+  {
     version: "2.6",
     date: "2026-11-15",
     items: [
@@ -139,16 +146,52 @@ function checkWhatsNew() {
   const show = () => renderChangelog(fresh, fresh.length === 1 ? "O que há de novo" : "O que mudou desde a sua última visita");
   // Espera o guia de primeiros passos fechar, se estiver aberto
   const waitWizard = () => ($("#welcome-overlay").hidden ? show() : setTimeout(waitWizard, 800));
-  setTimeout(waitWizard, 600);
+
+  // [ALTERADO] Só mostra depois que a atualização terminou de instalar.
+  // Se o instalador ainda é o da versão antiga, fica esperando: quando o novo assumir
+  // (bloco 4, "controllerchange"), ele chama pendingNews e a janela aparece.
+  installedVersion().then((v) => {
+    if (v === null || v === APP_VERSION_NUMBER) setTimeout(waitWizard, 600);
+    else {
+      pendingNews = waitWizard;
+      navigator.serviceWorker?.getRegistration().then((r) => r && r.update()).catch(() => {}); // apressa a instalação
+    }
+  });
 }
 
-/* ---------- 4. Versão nova publicada com o app aberto ---------- */
+/* ---------- 4. Instalação da atualização ----------
+   O "instalador" do app é o service worker (sw.js). A página é sempre baixada nova
+   da internet, mas o instalador demora alguns segundos para se atualizar.
+   Por isso a página pergunta a ele qual versão já está instalada:
+   - igual à da página → instalação concluída: pode mostrar as novidades;
+   - mais antiga (ou o instalador antigo nem sabe responder) → espera ele trocar;
+   - mais nova → esta página está velha: mostra a faixa "Atualizar". */
+let pendingNews = null; // novidades esperando a instalação terminar
+
+function installedVersion() {
+  if (window.__pregaoSwProbe) return window.__pregaoSwProbe();              // só nos testes
+  const sw = "serviceWorker" in navigator && location.protocol.startsWith("http") && navigator.serviceWorker.controller;
+  if (!sw) return Promise.resolve(null);  // sem instalador (1ª visita ou navegador sem suporte): nada a esperar
+  return new Promise((resolve) => {
+    const ch = new MessageChannel();
+    const timer = setTimeout(() => resolve("?"), 1500);                     // instalador antigo não responde
+    ch.port1.onmessage = (e) => { clearTimeout(timer); resolve(String(e.data)); };
+    sw.postMessage({ type: "version" }, [ch.port2]);
+  });
+}
+
 function watchForUpdates() {
   if (!("serviceWorker" in navigator) || !location.protocol.startsWith("http")) return;
-  const hadController = !!navigator.serviceWorker.controller;
-  // O service worker novo assume quando uma versão é publicada (sw.js mudou)
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (hadController) $("#update-banner").hidden = false;
+  // [ALTERADO] O instalador novo assumiu: vê se ele é desta página ou de uma mais nova
+  navigator.serviceWorker.addEventListener("controllerchange", async () => {
+    const v = await installedVersion();
+    if (v === APP_VERSION_NUMBER) {
+      // a página já é a versão nova: instalação concluída, sem faixa de "Atualizar"
+      $("#update-banner").hidden = true;
+      if (pendingNews) { const show = pendingNews; pendingNews = null; setTimeout(show, 300); }
+    } else if (v && v !== "?" && versionGt(v, APP_VERSION_NUMBER)) {
+      $("#update-banner").hidden = false; // publicaram outra versão com o app aberto
+    }
   });
   // Procura versão nova a cada 30 min e ao voltar para o app
   const check = () => navigator.serviceWorker.getRegistration().then((r) => r && r.update()).catch(() => {});

@@ -305,3 +305,40 @@ test("feedback: alternativa do GitHub abre a issue pronta", async ({ page }) => 
   expect(url.href).not.toContain("CHAVE-SECRETA-123");
   expect(await page.evaluate(() => window.__calls.feedback)).toBeUndefined(); // não mandou pro Forms
 });
+
+// [NOVO] Novidades só depois que a atualização terminou de instalar (js/novidades.js, bloco 4)
+const OLD_USER = { "pregao.seenVersion": "2.5", "pregao.watchlist": [] };
+
+test("novidades: esperam a instalação terminar e não pedem para atualizar", async ({ page }) => {
+  // instalador ainda é a versão antiga
+  await page.addInitScript(() => { window.__swV = "2.5"; window.__pregaoSwProbe = async () => window.__swV; });
+  await setup(page, { storage: OLD_USER });
+  await page.goto("/index.html");
+  await page.waitForTimeout(1500);
+  await expect(page.locator("#news-overlay")).toBeHidden();          // ainda instalando: nada de novidades
+
+  // o instalador novo assume
+  const cur = await page.evaluate(() => APP_VERSION_NUMBER);
+  await page.evaluate((v) => { window.__swV = v; navigator.serviceWorker.dispatchEvent(new Event("controllerchange")); }, cur);
+  await expect(page.locator("#news-overlay")).toBeVisible();
+  await expect(page.locator("#update-banner")).toBeHidden();         // a página já é a nova: sem "Atualizar"
+});
+
+test("novidades: versão publicada com o app aberto mostra Atualizar, não as novidades", async ({ page }) => {
+  await page.addInitScript(() => { window.__swV = null; window.__pregaoSwProbe = async () => window.__swV; });
+  await setup(page);
+  await page.goto("/index.html");
+  await page.evaluate(() => { window.__swV = "99.0"; navigator.serviceWorker.dispatchEvent(new Event("controllerchange")); });
+  await expect(page.locator("#update-banner")).toBeVisible();
+  await expect(page.locator("#news-overlay")).toBeHidden();
+});
+
+test("novidades: com o instalador de verdade, aparecem quando ele já é da versão nova", async ({ page }) => {
+  await setup(page, { storage: OLD_USER });
+  await page.goto("/index.html");
+  await page.waitForFunction(() => navigator.serviceWorker.controller, null, { timeout: 15000 });
+  // pergunta de verdade ao sw.js
+  const cur = await page.evaluate(() => APP_VERSION_NUMBER);
+  expect(await page.evaluate(() => installedVersion())).toBe(cur);
+  await expect(page.locator("#news-overlay")).toBeVisible({ timeout: 5000 });
+});

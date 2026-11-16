@@ -312,6 +312,7 @@ Pra criar um recurso novo, basta um arquivo em `js/` que use esses ganchos, mais
 
 | Versão | O que entrou |
 |---|---|
+| **2.7** | Novidades só aparecem depois que a atualização termina de instalar; sem faixa \"Atualizar\" quando a página já é a nova |
 | **2.6** | Feedback privado pelo Google Forms, sem conta e com envio depois quando estiver sem internet; GitHub vira alternativa |
 | **2.5** | Aba Feedback: ideias, problemas e elogios viram issues no GitHub |
 | **2.4** | Celular: listas de opções numa gaveta com as cores do Pregão · nome de cada moeda · botão voltar fecha a gaveta |
