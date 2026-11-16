@@ -169,7 +169,7 @@ async function sendFeedback(e) {
   done.hidden = false;
   done.querySelector("b").textContent = sent ? "Recebido, obrigado! 💛" : "Sem internet agora, guardei sua mensagem.";
   done.querySelector("span").textContent = sent
-    ? "O Rafael lê cada mensagem para decidir as próximas melhorias."
+    ? "Nossa equipe de feedback lê cada mensagem para decidir as próximas melhorias."
     : "Ela será enviada sozinha assim que a conexão voltar.";
   renderFbPending();
 }
