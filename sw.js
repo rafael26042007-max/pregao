@@ -8,7 +8,7 @@
    preço velho seria pior do que nenhum preço.
    Mude CACHE ao alterar esta lista de arquivos.
    ========================================================= */
-const CACHE = "pregao-v3.0.100"; // [ALTERADO] = versão do topo de CHANGELOG em js/novidades.js (o teste confere)
+const CACHE = "pregao-v4.0"; // [ALTERADO] = versão do topo de CHANGELOG em js/novidades.js (o teste confere)
 const APP_FILES = [
   "./",
   "index.html",
@@ -25,6 +25,9 @@ const APP_FILES = [
   "js/seletor.js",
   "js/privacidade.js",
   "js/transferir.js",
+  "js/banco.js",
+  "js/vendor/sql-wasm.js",
+  "js/vendor/sql-wasm.wasm",
   "js/feedback.js",
   "js/vendor/qrcode.js",
   "manifest.json",

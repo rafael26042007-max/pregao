@@ -636,5 +636,110 @@ test("novidades: versão de correção aparece com o rótulo correções", async
   await setup(page, { storage: { "pregao.seenVersion": "3.0", "pregao.watchlist": [] } });
   await page.goto("/index.html");
   await expect(page.locator("#news-overlay")).toBeVisible();
-  await expect(page.locator(".nv-badge").first()).toHaveText(/3\.0\.100 · correções/);
+  await expect(page.locator(".nv-badge", { hasText: "3.0.100" })).toHaveText("versão 3.0.100 · correções");
+  await expect(page.locator(".nv-badge", { hasText: "versão 4.0" })).toHaveText("versão 4.0"); // importante: sem rótulo
+});
+
+// [NOVO] Banco de dados SQLite (js/banco.js)
+const bancoAberto = (page) => page.waitForFunction(() => typeof banco !== "undefined" && !!banco.db, null, { timeout: 15000 });
+const contar = (page, simbolo) => page.evaluate((s) => bancoConsultar("SELECT COUNT(*) AS n FROM precos WHERE simbolo = ?", [s])[0].n, simbolo);
+
+test("banco: preços que chegam viram linhas e sobrevivem ao recarregar", async ({ page }) => {
+  await setup(page, { list: ["AAPL"] });
+  await page.goto("/index.html");
+  await bancoAberto(page);
+  await expect.poll(() => contar(page, "AAPL"), { timeout: 8000 }).toBeGreaterThan(0);
+  await page.evaluate(async () => { await bancoGravarFila(); banco.sujo = true; await bancoSalvar(); });
+  await page.reload();
+  await bancoAberto(page);
+  expect(await contar(page, "AAPL")).toBeGreaterThan(0);
+  // no máximo 1 linha por minuto: vários ticks no mesmo minuto não multiplicam linhas
+  expect(await page.evaluate(() => bancoConsultar("SELECT COUNT(*) AS n FROM (SELECT simbolo, minuto FROM precos GROUP BY simbolo, minuto HAVING COUNT(*) > 1)")[0].n)).toBe(0);
+});
+
+test("banco: símbolo com SQL malicioso é tratado como texto (parâmetros ?)", async ({ page }) => {
+  await setup(page, { list: ["MSFT"] });
+  await page.goto("/index.html");
+  await bancoAberto(page);
+  const r = await page.evaluate(async () => {
+    const ataque = "x'); DROP TABLE precos; --";
+    const resumo = await bancoResumo(ataque, 0);
+    banco.db.run("INSERT INTO precos VALUES (?, ?, ?, ?)", [ataque, 1, 1, "USD"]);
+    const tabela = bancoConsultar("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'precos'");
+    const guardado = bancoConsultar("SELECT simbolo FROM precos WHERE simbolo = ?", [ataque]);
+    return { total: resumo.total, tabela: tabela.length, guardado: guardado[0]?.simbolo };
+  });
+  expect(r.total).toBe(0);
+  expect(r.tabela).toBe(1);                                   // a tabela continua existindo
+  expect(r.guardado).toBe("x'); DROP TABLE precos; --");       // virou só um texto
+});
+
+test("banco: painel mostra mínima e máxima de 7 dias", async ({ page }) => {
+  await setup(page, { list: ["MSFT"] });
+  await page.goto("/index.html");
+  await bancoAberto(page);
+  await page.evaluate(() => {
+    const agora = Date.now();
+    banco.db.run("INSERT INTO precos VALUES (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)",
+      ["MSFT", agora - 3 * 864e5, 100, "USD", "MSFT", agora - 2 * 864e5, 200, "USD", "MSFT", agora - 10 * 864e5, 50, "USD"]);
+  });
+  await page.locator(".card", { hasText: "MSFT" }).first().click();
+  const box = page.locator("#d-db");
+  await expect(box).toContainText("Últimos 7 dias");
+  await expect(box).toContainText("US$ 100,00");                // a de 10 dias atrás (50) fica de fora
+  await expect(box).toContainText("US$ 200,00");
+});
+
+test("banco: baixar .sqlite, apagar histórico e limpeza de 30 dias", async ({ page }) => {
+  await setup(page, { list: ["MSFT"] });
+  await page.goto("/index.html");
+  await bancoAberto(page);
+  await page.evaluate(() => banco.db.run("INSERT INTO precos VALUES (?, ?, ?, ?), (?, ?, ?, ?)",
+    ["MSFT", Date.now(), 10, "USD", "VELHO", Date.now() - 40 * 864e5, 5, "USD"]));
+  await page.click("#btn-settings");
+  await page.click('#settings-nav button[data-tab="data"]');
+  await expect(page.locator("#db-stats")).toContainText("preços de");
+
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#db-download")]);
+  const fs = require("fs");
+  const head = fs.readFileSync(await dl.path()).subarray(0, 15).toString();
+  expect(head).toBe("SQLite format 3");                        // é um arquivo SQLite de verdade
+
+  // limpeza: salva e reabre; o de 40 dias some
+  await page.evaluate(async () => { banco.sujo = true; await bancoSalvar(); });
+  await page.reload();
+  await bancoAberto(page);
+  expect(await contar(page, "VELHO")).toBe(0);
+  expect(await contar(page, "MSFT")).toBeGreaterThan(0);
+
+  await page.click("#btn-settings");
+  await page.click('#settings-nav button[data-tab="data"]');
+  await page.click("#db-clear");
+  await expect(page.locator("#db-clear")).toHaveText("Toque de novo para confirmar");
+  await page.click("#db-clear");
+  await expect(page.locator("#db-stats")).toContainText("Ainda vazio");
+});
+
+test("banco: só uma aba grava", async ({ browser }) => {
+  const ctx = await browser.newContext();
+  const a = await ctx.newPage(); await setup(a, { list: ["MSFT"] }); await a.goto("/index.html");
+  await a.waitForTimeout(500);
+  const b = await ctx.newPage(); await b.goto("/index.html");
+  await b.waitForTimeout(800);
+  const g = [await a.evaluate(() => banco.gravador), await b.evaluate(() => banco.gravador)];
+  expect(g.filter(Boolean)).toHaveLength(1);
+});
+
+test("banco: Apagar meus dados também apaga o banco de preços", async ({ page }) => {
+  await setup(page, { list: ["MSFT"] });
+  await page.goto("/index.html");
+  await bancoAberto(page);
+  await page.evaluate(async () => { banco.db.run("INSERT INTO precos VALUES (?, ?, ?, ?)", ["MSFT", Date.now(), 1, "USD"]); banco.sujo = true; await bancoSalvar(); });
+  await page.click("#btn-settings");
+  await page.click('#settings-nav button[data-tab="privacy"]');
+  await page.click("#privacy-reset");
+  await page.click("#privacy-reset");
+  await page.waitForTimeout(1500);                               // apaga e recarrega
+  const dbs = await page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name));
+  expect(dbs).not.toContain("pregao-banco");
 });

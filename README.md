@@ -111,6 +111,7 @@ O app instalado se atualiza sozinho: cada mudança publicada aparece na próxima
 - **Tema claro, escuro ou do sistema** (botão ☀/☾ no topo ou em Configurações).
 - **App instalável (PWA)**: botão **Baixar app**, ícone na tela inicial, abre sem a barra do navegador e até abre sem internet (os preços voltam quando a conexão volta).
 - **Modo aplicativo**: no app instalado, bloqueia F12, Ctrl+Shift+I, Ctrl+U e o botão direito. Desligue em ⚙ → Aparência quando for programar. Não é segurança: o DevTools ainda abre pelo menu ⋮ do navegador.
+- **Banco de dados (SQLite)**: cada preço que chega vira uma linha numa tabela SQLite **deste aparelho** (sem servidor), no máximo 1 por minuto por ativo, guardada por 30 dias. O painel da ação mostra a **mínima e a máxima dos últimos 7 dias**. Em ⚙ → Dados e backup dá para ver o tamanho, **baixar o arquivo `.sqlite`** (abre no DB Browser for SQLite) ou apagar o histórico. Todas as consultas usam parâmetros `?`, a proteção contra SQL injection.
 - **Passar para outro aparelho por QR code**: ⚙ → Dados e backup → **Mostrar QR code**. No outro aparelho, aponte a câmera normal do celular ou use **Ler QR code** (também no guia de primeiros passos). Se o aparelho não tem câmera (PC sem webcam), o Pregão percebe antes e ensina o caminho pelo **Enviar link**. Leva lista, carteira, alertas, preferências e, se marcado, as chaves, e o aparelho novo pula a configuração. Os dados vão depois do `#` no link (não passam pelo servidor), o código vale 10 minutos e o aparelho novo sempre pede confirmação, mostrando o que entra e o que sai. Se ele já tiver os mesmos dados, só avisa e não muda nada.
 - **Privacidade**: o Pregão não usa cookies nem rastreamento. Quem ainda não configurou a própria chave (visitante ou modo demonstração) vê um aviso dizendo isso **a cada visita**; quem já configurou vê uma vez só. Em ⚙ → **Privacidade** dá para ver o que fica guardado no aparelho, para onde vão os pedidos e **apagar os dados deste aparelho** (útil em computador compartilhado).
 - **Feedback**: ⚙ → **Feedback** (ou "Enviar feedback" no rodapé). A pessoa escolhe Ideia, Problema ou Elogio, escreve e envia. A mensagem vai para o formulário **"Feedback do Pregão"** (Google Forms) e cai na planilha **"Feedback do Pregão (respostas)"** no Google Drive do Rafael: privado, sem conta, e funciona sem internet (envia depois). Quem preferir pode abrir uma **issue no GitHub** já preenchida (etiqueta `feedback`). Chaves, carteira e lista nunca vão junto.
@@ -259,6 +260,8 @@ js/boas-vindas.js     → guia de primeiros passos e modo demonstração
 js/novidades.js       → histórico de versões (CHANGELOG) e janela "O que há de novo"
 js/feedback.js        → aba Feedback: envia pro Google Forms (fila sem internet) ou abre issue no GitHub
 .github/ISSUE_TEMPLATE/feedback.md → modelo que põe a etiqueta "feedback" nas issues do app
+js/banco.js           → banco SQLite no navegador: guarda os preços (30 dias), mínima/máxima de 7 dias
+js/vendor/sql-wasm.*  → sql.js (SQLite em WebAssembly, MIT)
 js/transferir.js      → QR code para passar lista, carteira, alertas e chaves para outro aparelho
 js/vendor/jsqr.js     → leitor de QR code (jsQR 1.4.0, Apache-2.0), compactado; carregado só quando a câmera abre
 js/privacidade.js     → aviso de privacidade (a cada visita para quem não tem chave) e aba Privacidade (apagar dados do aparelho)
@@ -325,6 +328,7 @@ Pra criar um recurso novo, basta um arquivo em `js/` que use esses ganchos, mais
 
 | Versão | O que entrou |
 |---|---|
+| **4.0** | Banco de dados SQLite no aparelho: histórico de preços (30 dias), mínima/máxima de 7 dias no painel, baixar .sqlite |
 | **3.0.100** | Correções: cada aparelho reconhece o próprio QR code/link · aba Chaves de API também traz dados por QR code |
 | **3.0** | QR code para passar tudo para outro aparelho (nos dois sentidos), pulando a configuração |
 | **2.9** | Topo não corta a ⚙ em janelas de 641 a 860 px · gráficos 1M/3M terminam no preço atual · filtro vazio explica o que fazer · aviso de privacidade espera as novidades |

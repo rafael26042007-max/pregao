@@ -29,6 +29,7 @@ function showTab(tab) {
   document.querySelector(`#settings-nav button[data-tab="${tab}"]`)?.scrollIntoView({ block: "nearest", inline: "center" });
   // cada aba atualiza o que mostra quando é aberta
   ({ update: refreshUpdateTab, alerts: refreshAlertsTab, data: refreshDataTab, look: refreshLookTab }[tab] || (() => {}))();
+  emit("settingsTab", tab); // [NOVO] outros arquivos (ex.: js/banco.js) atualizam a parte deles
 }
 
 /* ---------- 2. Aba Chaves: mostrar/ocultar e testar ---------- */
@@ -286,7 +287,8 @@ function bindDataTab() {
 
 // [ALTERADO] Virou função: também é usada em ⚙ → Privacidade (js/privacidade.js).
 // Pede confirmação com um segundo clique (sem janela do navegador).
-function armResetButton(btn, label) {
+// [ALTERADO] `action` opcional: o que fazer no 2º toque (padrão: apagar tudo do aparelho)
+function armResetButton(btn, label, action = null) {
   let armed = null;
   btn.addEventListener("click", () => {
     if (!armed) {
@@ -294,11 +296,14 @@ function armResetButton(btn, label) {
       armed = setTimeout(() => { armed = null; btn.textContent = label; }, 4000);
       return;
     }
+    if (action) { clearTimeout(armed); armed = null; btn.textContent = label; action(); return; }
     window.__pregaoFrozen = true;              // [CORRIGIDO] idem ao importar
     pregaoKeys().forEach((k) => localStorage.removeItem(k));
     sessionStorage.clear();                    // [NOVO] avisos temporários desta aba
     toast("Tudo apagado deste aparelho. Recarregando…");
-    setTimeout(() => location.reload(), 900);
+    // [NOVO] também apaga o banco de preços (IndexedDB) antes de recarregar
+    const fim = () => setTimeout(() => location.reload(), 900);
+    typeof bancoApagarTudo === "function" ? bancoApagarTudo().then(fim) : fim();
   });
 }
 

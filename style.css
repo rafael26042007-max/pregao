@@ -1020,3 +1020,9 @@ body.sheet-open { overflow: hidden; }
 .tr-list li { padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
 #wz-qr { width: 100%; }
 .scan-steps { margin: 14px 0 4px; padding-left: 20px; display: grid; gap: 10px; color: var(--text-2); line-height: 1.5; font-size: 14px; }
+
+/* =========================================================
+   [NOVO] 11.6 Banco de dados (js/banco.js)
+   ========================================================= */
+.d-tag { font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--muted);
+         border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; margin-left: 6px; }

@@ -212,6 +212,7 @@
 
       <!-- [NOVO] seções preenchidas pelos arquivos da pasta js/ -->
       <section id="d-position" class="d-section"></section>   <!-- js/carteira.js -->
+      <section id="d-db" class="d-section"></section>         <!-- [NOVO] js/banco.js: mínima e máxima de 7 dias -->
       <section id="d-alerts" class="d-section"></section>     <!-- js/alertas.js  -->
       <section id="d-metrics" class="d-section"></section>    <!-- js/noticias.js -->
       <section id="d-news" class="d-section"></section>       <!-- js/noticias.js -->
@@ -413,6 +414,14 @@
               <div><b>Limpar cache</b><small id="set-cache-info">Gráficos e últimas cotações salvos. Não apaga lista, carteira nem alertas.</small></div>
               <button type="button" class="btn btn-ghost btn-sm" id="set-clear-cache">Limpar cache</button>
             </div>
+            <!-- [NOVO] Banco de dados SQLite (js/banco.js) -->
+            <div class="set-row">
+              <div><b>Histórico de preços (banco SQLite)</b><small id="db-stats">Abrindo o banco…</small></div>
+              <div class="row-actions">
+                <button type="button" class="btn btn-sm" id="db-download">Baixar .sqlite</button>
+                <button type="button" class="btn btn-ghost btn-sm danger" id="db-clear">Apagar histórico</button>
+              </div>
+            </div>
             <div class="set-row danger-zone">
               <div><b>Apagar tudo</b><small>Volta o Pregão ao estado de fábrica, inclusive as chaves.</small></div>
               <button type="button" class="btn btn-ghost btn-sm danger" id="set-reset">Apagar tudo</button>
@@ -430,6 +439,7 @@
               <li>Suas chaves de API</li>
               <li>Preferências: moeda, tema, tempo de atualização</li>
               <li>Cópias de gráficos e cotações, para abrir mais rápido</li>
+              <li>Histórico de preços dos últimos 30 dias, num banco SQLite <b>só deste aparelho</b></li> <!-- [NOVO] -->
             </ul>
             <p class="muted small">Nada disso vai para um servidor do Pregão, porque ele não tem servidor. Fica só no navegador deste aparelho, e só você vê.</p>
 
@@ -791,6 +801,7 @@
   </div>
   <script src="js/feedback.js"></script> <!-- [NOVO] usa APP_VERSION, openSettings e showTab; envia pelo Google Forms; GitHub como alternativa -->
   <script src="js/privacidade.js"></script>
-  <script src="js/transferir.js"></script> <!-- [NOVO] QR code entre aparelhos; usa collectBackupData, applyBackupData, loadQrLib --> <!-- [NOVO] usa armResetButton, openSettings e showTab -->
+  <script src="js/transferir.js"></script>
+  <script src="js/banco.js"></script> <!-- [NOVO] SQLite no navegador; usa armResetButton, fmtPrice, currencyOf --> <!-- [NOVO] QR code entre aparelhos; usa collectBackupData, applyBackupData, loadQrLib --> <!-- [NOVO] usa armResetButton, openSettings e showTab -->
 </body>
 </html>

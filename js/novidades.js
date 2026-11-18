@@ -25,6 +25,15 @@
 /* ---------- 1. Histórico (o primeiro é a versão atual) ---------- */
 const CHANGELOG = [
   {
+    version: "4.0",
+    date: "2026-11-18",
+    items: [
+      ["🗄️", "O Pregão agora tem um banco de dados neste aparelho: guarda os preços que chegam (até 30 dias)."],
+      ["📉", "No painel de cada ação: a mínima e a máxima dos últimos 7 dias."],
+      ["💾", "Em ⚙ → Dados e backup dá para ver o tamanho do banco, baixar o arquivo .sqlite ou apagar o histórico."],
+    ],
+  },
+  {
     version: "3.0.100",
     date: "2026-11-16",
     items: [
